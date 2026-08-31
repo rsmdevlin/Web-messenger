@@ -278,7 +278,13 @@
   margin-top: 2px;
 }
 
-.logout-btn {
+.footer-buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.footer-btn {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-md);
@@ -291,6 +297,17 @@
   justify-content: center;
   transition: var(--transition);
   flex-shrink: 0;
+}
+
+.footer-btn:hover {
+  border-color: var(--text-muted);
+  background: var(--surface);
+}
+
+.settings-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(91, 141, 255, 0.05);
 }
 
 .logout-btn:hover {

@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import io, { Socket } from "socket.io-client";
 import AuthScreen from "./components/auth/AuthScreen";
 import ChatSidebar from "./components/chat/ChatSidebar";
 import ChatWindow from "./components/chat/ChatWindow";
+import Settings from "./components/settings/Settings";
 import "./App.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
@@ -17,6 +18,9 @@ const api = axios.create({
 interface User {
   id: number;
   username: string;
+  email: string;
+  avatar?: string;
+  displayName?: string;
 }
 
 interface Chat {
@@ -25,6 +29,7 @@ interface Chat {
   type: string;
   created_by: number;
   created_at: string;
+  participants?: number[];
 }
 
 interface Message {
@@ -46,25 +51,32 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const messagesLoadedRef = useRef<Set<number>>(new Set());
 
+  // AUTH CHECK
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const response = await api.get("/auth/me");
-        setUser(response.data);
-        setIsAuthenticated(true);
+        if (response.data) {
+          setUser(response.data);
+          setIsAuthenticated(true);
+        }
       } catch (err) {
         setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
-
     checkAuth();
   }, []);
 
+  // SOCKET.IO SETUP
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user) return;
 
     const newSocket = io(SOCKET_URL, {
       withCredentials: true,
@@ -75,87 +87,106 @@ export default function App() {
     });
 
     newSocket.on("connect", () => {
-      console.log("Socket connected");
+      console.log("✅ Socket connected");
     });
 
     newSocket.on("new_message", (data: Message) => {
-      if (data.sender_id) {
+      if (data && data.sender_id && data.chat_id === selectedChat?.id) {
         setMessages((prev) => [...prev, data]);
       }
     });
 
+    newSocket.on("typing", (data: { userId: number; username: string; chatId: number }) => {
+      // Handle typing indicator
+    });
+
+    socketRef.current = newSocket;
     setSocket(newSocket);
 
     return () => {
       newSocket.disconnect();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user, selectedChat?.id]);
 
+  // LOAD CHATS
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user) return;
 
     const loadChats = async () => {
       try {
         const response = await api.get("/chats");
-        setChats(response.data);
+        if (response.data && Array.isArray(response.data)) {
+          setChats(response.data);
+        }
       } catch (err) {
-        console.error("Failed to load chats", err);
+        console.error("Failed to load chats:", err);
+        setChats([]);
       }
     };
 
     loadChats();
-  }, [isAuthenticated]);
+    const interval = setInterval(loadChats, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
 
+  // LOAD MESSAGES
   useEffect(() => {
-    if (!selectedChat) return;
+    if (!selectedChat || !isAuthenticated) return;
 
     const loadMessages = async () => {
       try {
         const response = await api.get(`/messages/${selectedChat.id}`);
-        setMessages(response.data);
+        if (response.data && Array.isArray(response.data)) {
+          setMessages(response.data);
+          messagesLoadedRef.current.add(selectedChat.id);
+        }
       } catch (err) {
-        console.error("Failed to load messages", err);
+        console.error("Failed to load messages:", err);
+        setMessages([]);
       }
     };
 
     loadMessages();
 
-    if (socket) {
-      socket.emit("join_chat", { chat_id: selectedChat.id });
+    if (socketRef.current) {
+      socketRef.current.emit("join_chat", { chat_id: selectedChat.id });
     }
-  }, [selectedChat, socket]);
+  }, [selectedChat?.id, isAuthenticated]);
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedChat || !user) return;
+    if (!selectedChat || !user || !content.trim()) return;
 
     try {
       const response = await api.post("/messages", {
         chat_id: selectedChat.id,
-        content,
+        content: content.trim(),
       });
 
-      if (response.data && response.data.sender_id) {
+      if (response.data) {
         setMessages((prev) => [...prev, response.data]);
-      }
-
-      if (socket) {
-        socket.emit("send_message", {
-          chat_id: selectedChat.id,
-          content,
-          sender_id: user.id,
-        });
+        if (socketRef.current) {
+          socketRef.current.emit("send_message", {
+            chat_id: selectedChat.id,
+            content,
+            sender_id: user.id,
+          });
+        }
       }
     } catch (err) {
-      console.error("Failed to send message", err);
+      console.error("Failed to send message:", err);
     }
   };
 
   const handleCreateChat = async (name: string) => {
+    if (!name.trim()) return;
     try {
-      const response = await api.post("/chats", { name });
-      setChats((prev) => [...prev, response.data]);
+      const response = await api.post("/chats", { name: name.trim() });
+      if (response.data) {
+        setChats((prev) => [...prev, response.data]);
+        setSelectedChat(response.data);
+      }
     } catch (err) {
-      console.error("Failed to create chat", err);
+      console.error("Failed to create chat:", err);
     }
   };
 
@@ -167,8 +198,9 @@ export default function App() {
       setChats([]);
       setSelectedChat(null);
       setMessages([]);
+      setShowSettings(false);
     } catch (err) {
-      console.error("Failed to logout", err);
+      console.error("Failed to logout:", err);
     }
   };
 
@@ -184,6 +216,16 @@ export default function App() {
     return <AuthScreen onAuthSuccess={() => setIsAuthenticated(true)} />;
   }
 
+  if (showSettings && user) {
+    return (
+      <Settings
+        user={user}
+        onBack={() => setShowSettings(false)}
+        onUserUpdate={setUser}
+      />
+    );
+  }
+
   return (
     <div className="app">
       <div className="app-sidebar">
@@ -197,6 +239,7 @@ export default function App() {
             onSearchChange={setSearchQuery}
             user={user}
             onLogout={handleLogout}
+            onOpenSettings={() => setShowSettings(true)}
           />
         )}
       </div>
@@ -210,7 +253,17 @@ export default function App() {
           />
         ) : (
           <div className="empty-chat">
-            <p>Выберите чат для начала</p>
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" opacity="0.2" />
+              <path
+                d="M32 16C23.2 16 16 23.2 16 32C16 35.3 17 38.4 18.8 41L16 48L23.3 45.2C26.1 47 29.3 48 32 48C40.8 48 48 40.8 48 32C48 23.2 40.8 16 32 16Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                opacity="0.5"
+              />
+            </svg>
+            <p>Выберите чат</p>
+            <span>или создайте новый</span>
           </div>
         )}
       </div>
