@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./MainLayout.css";
 
 interface Props {
@@ -6,8 +7,10 @@ interface Props {
 }
 
 export default function MainLayout({ sidebar, main }: Props) {
+  const [showChat, setShowChat] = useState(false);
+
   return (
-    <div className="main-layout">
+    <div className="main-layout" data-view={showChat ? "chat" : "list"}>
       <div className="layout-sidebar">{sidebar}</div>
       <div className="layout-main">{main}</div>
     </div>
