@@ -282,9 +282,9 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(express.static("client/dist"));
+app.use(express.static("../client/dist"));
 app.get("*", (req: Request, res: Response) => {
-  res.sendFile("client/dist/index.html");
+  res.sendFile("../client/dist/index.html", { root: process.cwd() });
 });
 
 const PORT = process.env.PORT || 3000;
