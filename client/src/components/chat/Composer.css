@@ -1,0 +1,95 @@
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-muted);
+  background: var(--bg);
+  flex-shrink: 0;
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.composer-btn {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border-muted);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.composer-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(91, 141, 255, 0.05);
+}
+
+.composer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.composer-input {
+  flex: 1;
+  border: 1.5px solid var(--border-muted);
+  border-radius: 20px;
+  padding: var(--space-2) var(--space-4);
+  max-height: 100px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  resize: none;
+  line-height: 1.4;
+  transition: var(--transition);
+  overflow-y: auto;
+}
+
+.composer-input:focus {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  box-shadow: 0 0 0 3px rgba(91, 141, 255, 0.1);
+}
+
+.composer-input::placeholder {
+  color: var(--text-dim);
+}
+
+.composer-send.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.composer-send.active:hover {
+  background: rgba(91, 141, 255, 0.1);
+  box-shadow: 0 0 0 8px rgba(91, 141, 255, 0.05);
+}
+
+.composer-send.active:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 480px) {
+  .composer {
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .composer-input {
+    font-size: 16px;
+  }
+
+  .composer-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+}
