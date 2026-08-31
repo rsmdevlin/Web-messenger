@@ -1,27 +1,22 @@
 {
   "name": "web-messenger",
   "version": "1.0.0",
-  "description": "Modern Web Messenger with real-time messaging",
-  "private": true,
+  "description": "my messenger",
+  "type": "module",
+  "main": "server/dist/index.js",
   "scripts": {
-    "build": "npm run build:server && npm run build:client",
-    "build:server": "cd server && npm install && npm run build",
-    "build:client": "cd client && npm install && npm run build",
+    "build": "npm install && npm run build --workspaces",
     "start": "node server/dist/index.js",
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
-    "server:dev": "cd server && npm run dev",
-    "client:dev": "cd client && npm run dev"
+    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\""
   },
   "workspaces": [
     "server",
     "client"
   ],
-  "keywords": [
-    "messenger",
-    "chat",
-    "realtime",
-    "socket.io"
-  ],
-  "author": "",
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["messenger", "chat", "socket.io", "react", "express"],
+  "author": "rsmdevlin",
   "license": "MIT"
 }
