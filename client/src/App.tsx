@@ -57,28 +57,35 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // AUTH CHECK - Run once on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await api.get("/auth/me");
-        if (response.data) {
-          setUser(response.data);
-          setIsAuthenticated(true);
-        }
-      } catch (err) {
-        setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setLoading(false);
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await api.get("/auth/me");
+      if (response.data) {
+        setUser(response.data);
+        setIsAuthenticated(true);
       }
-    };
-    checkAuth();
+    } catch (err) {
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Handle auth success - recheck auth immediately
+  const handleAuthSuccess = useCallback(async () => {
+    await checkAuth();
+  }, [checkAuth]);
 
   // SOCKET.IO SETUP - Initialize when authenticated
   useEffect(() => {
@@ -144,6 +151,13 @@ export default function App() {
     }
   }, [isAuthenticated, user]);
 
+  // Apply theme to document
+  useEffect(() => {
+    if (user?.theme) {
+      document.documentElement.setAttribute('data-theme', user.theme);
+    }
+  }, [user?.theme]);
+
   // Load chats on auth
   useEffect(() => {
     loadChats();
@@ -200,13 +214,7 @@ export default function App() {
 
       if (response.data) {
         setMessages((prev) => [...prev, response.data]);
-        if (socketRef.current) {
-          socketRef.current.emit("send_message", {
-            chat_id: selectedChat.id,
-            content,
-            sender_id: user.id,
-          });
-        }
+        // Don't emit socket - server will broadcast to room
       }
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -283,7 +291,7 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    return <AuthScreen onAuthSuccess={() => setIsAuthenticated(true)} />;
+    return <AuthScreen onAuthSuccess={handleAuthSuccess} />;
   }
 
   if (showSettings && user) {
@@ -298,12 +306,15 @@ export default function App() {
 
   return (
     <div className="app">
-      <div className="app-sidebar">
+      <div className={`app-sidebar ${sidebarVisible ? "visible" : ""}`}>
         {user && (
           <ChatSidebar
             chats={chats}
             selectedChat={selectedChat}
-            onSelectChat={setSelectedChat}
+            onSelectChat={(chat) => {
+              setSelectedChat(chat);
+              setSidebarVisible(false); // Hide sidebar on mobile after selecting
+            }}
             onCreateChat={handleCreateChat}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -316,15 +327,26 @@ export default function App() {
       </div>
       <div className="app-main">
         {selectedChat && user ? (
-          <ChatWindow
-            chat={selectedChat}
-            messages={messages}
-            user={user}
-            onSendMessage={handleSendMessage}
-            onTyping={handleTyping}
-            typingUsers={typingUsers}
-            messagesEndRef={messagesEndRef}
-          />
+          <>
+            <button
+              className="sidebar-toggle"
+              onClick={() => setSidebarVisible(!sidebarVisible)}
+              title="Toggle sidebar"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M2 5H18M2 10H18M2 15H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+            <ChatWindow
+              chat={selectedChat}
+              messages={messages}
+              user={user}
+              onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
+              typingUsers={typingUsers}
+              messagesEndRef={messagesEndRef}
+            />
+          </>
         ) : (
           <div className="empty-chat">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
