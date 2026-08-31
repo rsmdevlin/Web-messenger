@@ -47,7 +47,6 @@ export default function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Проверить авторизацию при загрузке
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -64,7 +63,6 @@ export default function App() {
     checkAuth();
   }, []);
 
-  // Инициализировать Socket.IO
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -93,7 +91,6 @@ export default function App() {
     };
   }, [isAuthenticated]);
 
-  // Загрузить чаты
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -109,7 +106,6 @@ export default function App() {
     loadChats();
   }, [isAuthenticated]);
 
-  // Загрузить сообщения при выборе чата
   useEffect(() => {
     if (!selectedChat) return;
 
@@ -127,7 +123,7 @@ export default function App() {
     if (socket) {
       socket.emit("join_chat", { chat_id: selectedChat.id });
     }
-  }, [selectedChat]);
+  }, [selectedChat, socket]);
 
   const handleSendMessage = async (content: string) => {
     if (!selectedChat || !user) return;
