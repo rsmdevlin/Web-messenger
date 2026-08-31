@@ -17,7 +17,11 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    username: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,11 +30,25 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
 
     try {
       const endpoint = isRegistering ? "/auth/register" : "/auth/login";
-      await api.post(endpoint, formData);
-      setFormData({ username: "", email: "", password: "" });
+      const payload = isRegistering
+        ? {
+            email: formData.email,
+            password: formData.password,
+            username: formData.username || undefined,
+          }
+        : {
+            email: formData.email,
+            password: formData.password,
+          };
+
+      await api.post(endpoint, payload);
+      setFormData({ email: "", password: "", username: "" });
       onAuthSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || (isRegistering ? "Ошибка регистрации" : "Ошибка входа"));
+      setError(
+        err.response?.data?.error ||
+          (isRegistering ? "Registration failed" : "Login failed")
+      );
     } finally {
       setLoading(false);
     }
@@ -39,7 +57,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
   const handleToggleMode = () => {
     setIsRegistering(!isRegistering);
     setError("");
-    setFormData({ username: "", email: "", password: "" });
+    setFormData({ email: "", password: "", username: "" });
   };
 
   return (
@@ -53,21 +71,23 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="input-group">
             <div
-              className={`input-wrapper ${focusedField === "username" ? "focused" : ""} ${
-                formData.username ? "filled" : ""
-              }`}
+              className={`input-wrapper ${
+                focusedField === "email" ? "focused" : ""
+              } ${formData.email ? "filled" : ""}`}
             >
               <input
-                type="text"
-                id="username"
-                placeholder="Имя пользователя"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                onFocus={() => setFocusedField("username")}
+                type="email"
+                id="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                onFocus={() => setFocusedField("email")}
                 onBlur={() => setFocusedField(null)}
                 disabled={loading}
                 required
-                autoComplete="username"
+                autoComplete="email"
               />
             </div>
           </div>
@@ -75,21 +95,22 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           {isRegistering && (
             <div className="input-group">
               <div
-                className={`input-wrapper ${focusedField === "email" ? "focused" : ""} ${
-                  formData.email ? "filled" : ""
-                }`}
+                className={`input-wrapper ${
+                  focusedField === "username" ? "focused" : ""
+                } ${formData.username ? "filled" : ""}`}
               >
                 <input
-                  type="email"
-                  id="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  onFocus={() => setFocusedField("email")}
+                  type="text"
+                  id="username"
+                  placeholder="Username (optional)"
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                  onFocus={() => setFocusedField("username")}
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
-                  required
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </div>
             </div>
@@ -97,21 +118,25 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
 
           <div className="input-group">
             <div
-              className={`input-wrapper ${focusedField === "password" ? "focused" : ""} ${
-                formData.password ? "filled" : ""
-              }`}
+              className={`input-wrapper ${
+                focusedField === "password" ? "focused" : ""
+              } ${formData.password ? "filled" : ""}`}
             >
               <input
                 type="password"
                 id="password"
-                placeholder="Пароль"
+                placeholder="Password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 onFocus={() => setFocusedField("password")}
                 onBlur={() => setFocusedField(null)}
                 disabled={loading}
                 required
-                autoComplete={isRegistering ? "new-password" : "current-password"}
+                autoComplete={
+                  isRegistering ? "new-password" : "current-password"
+                }
               />
             </div>
           </div>
@@ -122,18 +147,25 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
             {loading ? (
               <>
                 <span className="spinner"></span>
-                <span>{isRegistering ? "Регистрация..." : "Вход..."}</span>
+                <span>{isRegistering ? "Creating account..." : "Signing in..."}</span>
               </>
             ) : isRegistering ? (
-              "Создать аккаунт"
+              "Create Account"
             ) : (
-              "Войти"
+              "Sign In"
             )}
           </button>
         </form>
 
-        <button type="button" onClick={handleToggleMode} className="auth-toggle" disabled={loading}>
-          {isRegistering ? "Уже есть аккаунт? Войти" : "Создать аккаунт? Регистрация"}
+        <button
+          type="button"
+          onClick={handleToggleMode}
+          className="auth-toggle"
+          disabled={loading}
+        >
+          {isRegistering
+            ? "Already have an account? Sign In"
+            : "Create an account? Register"}
         </button>
       </div>
     </div>

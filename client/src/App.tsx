@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import io, { Socket } from "socket.io-client";
 import AuthScreen from "./components/auth/AuthScreen";
@@ -21,6 +21,8 @@ interface User {
   email: string;
   avatar?: string;
   displayName?: string;
+  theme?: string;
+  message_style?: string;
 }
 
 interface Chat {
@@ -29,6 +31,7 @@ interface Chat {
   type: string;
   created_by: number;
   created_at: string;
+  target_user_id?: number;
   participants?: number[];
 }
 
@@ -40,6 +43,8 @@ interface Message {
   type: string;
   is_read: number;
   created_at: string;
+  username?: string;
+  avatar?: string;
 }
 
 export default function App() {
@@ -49,13 +54,14 @@ export default function App() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const socketRef = useRef<Socket | null>(null);
-  const messagesLoadedRef = useRef<Set<number>>(new Set());
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // AUTH CHECK
+  // AUTH CHECK - Run once on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -74,7 +80,7 @@ export default function App() {
     checkAuth();
   }, []);
 
-  // SOCKET.IO SETUP
+  // SOCKET.IO SETUP - Initialize when authenticated
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
@@ -88,48 +94,64 @@ export default function App() {
 
     newSocket.on("connect", () => {
       console.log("✅ Socket connected");
+      // Reload chats when socket connects to ensure data is fresh
+      loadChats();
     });
 
     newSocket.on("new_message", (data: Message) => {
-      if (data && data.sender_id && data.chat_id === selectedChat?.id) {
+      if (data && data.sender_id && selectedChat && data.chat_id === selectedChat.id) {
         setMessages((prev) => [...prev, data]);
       }
     });
 
-    newSocket.on("typing", (data: { userId: number; username: string; chatId: number }) => {
-      // Handle typing indicator
+    newSocket.on("typing", (data: { username: string; isTyping: boolean; count: number }) => {
+      if (data.isTyping) {
+        setTypingUsers((prev) => {
+          if (!prev.includes(data.username)) {
+            return [...prev, data.username];
+          }
+          return prev;
+        });
+      } else {
+        setTypingUsers((prev) => prev.filter((u) => u !== data.username));
+      }
+    });
+
+    newSocket.on("message_reaction", () => {
+      // Handle message reactions
     });
 
     socketRef.current = newSocket;
-    setSocket(newSocket);
 
     return () => {
       newSocket.disconnect();
     };
   }, [isAuthenticated, user, selectedChat?.id]);
 
-  // LOAD CHATS
-  useEffect(() => {
+  // LOAD CHATS - Memoized to prevent infinite loops
+  const loadChats = useCallback(async () => {
     if (!isAuthenticated || !user) return;
 
-    const loadChats = async () => {
-      try {
-        const response = await api.get("/chats");
-        if (response.data && Array.isArray(response.data)) {
-          setChats(response.data);
-        }
-      } catch (err) {
-        console.error("Failed to load chats:", err);
-        setChats([]);
+    try {
+      const response = await api.get("/chats");
+      console.log("📋 Chats loaded:", response.data);
+      if (response.data && Array.isArray(response.data)) {
+        setChats(response.data);
       }
-    };
+    } catch (err) {
+      console.error("❌ Failed to load chats:", err);
+      setChats([]);
+    }
+  }, [isAuthenticated, user]);
 
+  // Load chats on auth
+  useEffect(() => {
     loadChats();
     const interval = setInterval(loadChats, 30000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, user]);
+  }, [loadChats]);
 
-  // LOAD MESSAGES
+  // LOAD MESSAGES - When chat is selected
   useEffect(() => {
     if (!selectedChat || !isAuthenticated) return;
 
@@ -138,7 +160,7 @@ export default function App() {
         const response = await api.get(`/messages/${selectedChat.id}`);
         if (response.data && Array.isArray(response.data)) {
           setMessages(response.data);
-          messagesLoadedRef.current.add(selectedChat.id);
+          setTypingUsers([]);
         }
       } catch (err) {
         console.error("Failed to load messages:", err);
@@ -153,8 +175,22 @@ export default function App() {
     }
   }, [selectedChat?.id, isAuthenticated]);
 
+  // Auto-scroll to bottom when messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const handleSendMessage = async (content: string) => {
     if (!selectedChat || !user || !content.trim()) return;
+
+    // Stop typing indicator
+    if (socketRef.current) {
+      socketRef.current.emit("typing", {
+        chat_id: selectedChat.id,
+        username: user.username,
+        isTyping: false,
+      });
+    }
 
     try {
       const response = await api.post("/messages", {
@@ -177,12 +213,43 @@ export default function App() {
     }
   };
 
-  const handleCreateChat = async (name: string) => {
+  const handleTyping = (isTyping: boolean) => {
+    if (!selectedChat || !user) return;
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    if (socketRef.current) {
+      socketRef.current.emit("typing", {
+        chat_id: selectedChat.id,
+        username: user.username,
+        isTyping,
+      });
+    }
+
+    if (isTyping) {
+      typingTimeoutRef.current = setTimeout(() => {
+        if (socketRef.current) {
+          socketRef.current.emit("typing", {
+            chat_id: selectedChat.id,
+            username: user.username,
+            isTyping: false,
+          });
+        }
+      }, 3000);
+    }
+  };
+
+  const handleCreateChat = async (name: string, targetUserId?: number) => {
     if (!name.trim()) return;
     try {
-      const response = await api.post("/chats", { name: name.trim() });
+      const response = await api.post("/chats", {
+        name: name.trim(),
+        targetUserId,
+      });
       if (response.data) {
-        setChats((prev) => [...prev, response.data]);
+        setChats((prev) => [response.data, ...prev]);
         setSelectedChat(response.data);
       }
     } catch (err) {
@@ -199,6 +266,9 @@ export default function App() {
       setSelectedChat(null);
       setMessages([]);
       setShowSettings(false);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     } catch (err) {
       console.error("Failed to logout:", err);
     }
@@ -240,6 +310,7 @@ export default function App() {
             user={user}
             onLogout={handleLogout}
             onOpenSettings={() => setShowSettings(true)}
+            onTyping={handleTyping}
           />
         )}
       </div>
@@ -250,11 +321,21 @@ export default function App() {
             messages={messages}
             user={user}
             onSendMessage={handleSendMessage}
+            onTyping={handleTyping}
+            typingUsers={typingUsers}
+            messagesEndRef={messagesEndRef}
           />
         ) : (
           <div className="empty-chat">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-              <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" opacity="0.2" />
+              <circle
+                cx="32"
+                cy="32"
+                r="30"
+                stroke="currentColor"
+                strokeWidth="2"
+                opacity="0.2"
+              />
               <path
                 d="M32 16C23.2 16 16 23.2 16 32C16 35.3 17 38.4 18.8 41L16 48L23.3 45.2C26.1 47 29.3 48 32 48C40.8 48 48 40.8 48 32C48 23.2 40.8 16 32 16Z"
                 stroke="currentColor"
@@ -262,8 +343,8 @@ export default function App() {
                 opacity="0.5"
               />
             </svg>
-            <p>Выберите чат</p>
-            <span>или создайте новый</span>
+            <p>Select a chat</p>
+            <span>or create a new one</span>
           </div>
         )}
       </div>

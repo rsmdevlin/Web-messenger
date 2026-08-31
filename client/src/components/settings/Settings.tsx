@@ -8,6 +8,8 @@ interface User {
   email: string;
   avatar?: string;
   displayName?: string;
+  theme?: string;
+  message_style?: string;
 }
 
 interface Props {
@@ -16,36 +18,45 @@ interface Props {
   onUserUpdate: (user: User) => void;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+});
+
 export default function Settings({ user, onBack, onUserUpdate }: Props) {
   const [tab, setTab] = useState<"profile" | "account" | "appearance">("profile");
-  const [editingField, setEditingField] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState(user.displayName || "");
   const [customUsername, setCustomUsername] = useState(user.username || "");
-  const [showEmailVerify, setShowEmailVerify] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [messageStyle, setMessageStyle] = useState<"rounded" | "square">("rounded");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">(user.theme === "light" ? "light" : "dark");
+  const [messageStyle, setMessageStyle] = useState<"rounded" | "square">(
+    user.message_style === "square" ? "square" : "rounded"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [showEmailVerify, setShowEmailVerify] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const API_URL = import.meta.env.VITE_API_URL || "/api";
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("avatar", file);
-
     setLoading(true);
+    setError("");
+
     try {
-      const response = await axios.post(`${API_URL}/user/avatar`, formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      onUserUpdate({ ...user, avatar: response.data.avatar });
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target?.result as string;
+        const response = await api.post("/user/avatar", { avatar: base64 });
+        onUserUpdate({ ...user, avatar: response.data.avatar });
+        setSuccess("Avatar updated successfully");
+        setTimeout(() => setSuccess(""), 3000);
+      };
+      reader.readAsDataURL(file);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to upload avatar");
     } finally {
@@ -56,16 +67,29 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
   const handleUpdateUsername = async () => {
     if (!customUsername.trim()) return;
     setLoading(true);
+    setError("");
     try {
-      const response = await axios.put(
-        `${API_URL}/user/username`,
-        { username: customUsername },
-        { withCredentials: true }
-      );
+      const response = await api.put("/user/username", { username: customUsername });
       onUserUpdate(response.data);
-      setEditingField(null);
+      setSuccess("Username updated");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to update username");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateDisplayName = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.put("/user/display-name", { displayName });
+      onUserUpdate(response.data);
+      setSuccess("Display name updated");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to update display name");
     } finally {
       setLoading(false);
     }
@@ -74,19 +98,35 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
   const handleUpdateEmail = async () => {
     if (!password || !newEmail) return;
     setLoading(true);
+    setError("");
     try {
-      const response = await axios.put(
-        `${API_URL}/user/email`,
-        { email: newEmail, password },
-        { withCredentials: true }
-      );
+      const response = await api.put("/user/email", { email: newEmail, password });
       onUserUpdate(response.data);
       setShowEmailVerify(false);
       setPassword("");
       setNewEmail("");
-      setError("");
+      setSuccess("Email updated successfully");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to update email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePreferences = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.put("/user/profile", {
+        theme,
+        messageStyle,
+      });
+      onUserUpdate(response.data);
+      setSuccess("Preferences updated");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to update preferences");
     } finally {
       setLoading(false);
     }
@@ -100,7 +140,7 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
             <path d="M12 16L6 10L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
-        <h1>Параметры</h1>
+        <h1>Settings</h1>
         <div style={{ width: "32px" }} />
       </div>
 
@@ -109,24 +149,25 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
           className={`settings-tab ${tab === "profile" ? "active" : ""}`}
           onClick={() => setTab("profile")}
         >
-          Профиль
+          Profile
         </button>
         <button
           className={`settings-tab ${tab === "account" ? "active" : ""}`}
           onClick={() => setTab("account")}
         >
-          Аккаунт
+          Account
         </button>
         <button
           className={`settings-tab ${tab === "appearance" ? "active" : ""}`}
           onClick={() => setTab("appearance")}
         >
-          Вид
+          Appearance
         </button>
       </div>
 
       <div className="settings-content">
         {error && <div className="settings-error">{error}</div>}
+        {success && <div className="settings-success">{success}</div>}
 
         {tab === "profile" && (
           <div className="settings-section">
@@ -139,11 +180,11 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
                 )}
               </div>
               <button
-                className="upload-avatar-btn"
+                className="upload-btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
               >
-                Загрузить фото
+                Change Photo
               </button>
               <input
                 ref={fileInputRef}
@@ -155,30 +196,22 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
             </div>
 
             <div className="settings-field">
-              <label>Имя профиля</label>
-              {editingField === "displayName" ? (
-                <div className="field-edit">
-                  <input
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Ваше имя"
-                  />
-                  <button
-                    onClick={() => {
-                      setEditingField(null);
-                    }}
-                    className="btn-save"
-                    disabled={loading}
-                  >
-                    Сохранить
-                  </button>
-                </div>
-              ) : (
-                <div className="field-display">
-                  <span>{displayName || "Не указано"}</span>
-                  <button onClick={() => setEditingField("displayName")}>Изменить</button>
-                </div>
-              )}
+              <label>Display Name</label>
+              <div className="field-edit">
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Your display name"
+                  disabled={loading}
+                />
+                <button
+                  onClick={handleUpdateDisplayName}
+                  className="btn-save"
+                  disabled={loading || displayName === user.displayName}
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -186,28 +219,22 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
         {tab === "account" && (
           <div className="settings-section">
             <div className="settings-field">
-              <label>@username</label>
-              {editingField === "username" ? (
-                <div className="field-edit">
-                  <input
-                    value={customUsername}
-                    onChange={(e) => setCustomUsername(e.target.value)}
-                    placeholder="@username"
-                  />
-                  <button
-                    onClick={handleUpdateUsername}
-                    className="btn-save"
-                    disabled={loading}
-                  >
-                    Сохранить
-                  </button>
-                </div>
-              ) : (
-                <div className="field-display">
-                  <span>@{user.username}</span>
-                  <button onClick={() => setEditingField("username")}>Изменить</button>
-                </div>
-              )}
+              <label>@Username</label>
+              <div className="field-edit">
+                <input
+                  value={customUsername}
+                  onChange={(e) => setCustomUsername(e.target.value)}
+                  placeholder="@username"
+                  disabled={loading}
+                />
+                <button
+                  onClick={handleUpdateUsername}
+                  className="btn-save"
+                  disabled={loading || customUsername === user.username}
+                >
+                  Update
+                </button>
+              </div>
             </div>
 
             <div className="settings-field">
@@ -215,7 +242,12 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
               {!showEmailVerify ? (
                 <div className="field-display">
                   <span>{user.email}</span>
-                  <button onClick={() => setShowEmailVerify(true)}>Изменить</button>
+                  <button
+                    onClick={() => setShowEmailVerify(true)}
+                    className="btn-edit"
+                  >
+                    Change
+                  </button>
                 </div>
               ) : (
                 <div className="field-edit email-verify">
@@ -223,13 +255,15 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="Новый email"
+                    placeholder="New email"
+                    disabled={loading}
                   />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Пароль для подтверждения"
+                    placeholder="Password to confirm"
+                    disabled={loading}
                   />
                   <div className="verify-buttons">
                     <button
@@ -237,7 +271,7 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
                       className="btn-save"
                       disabled={loading || !newEmail || !password}
                     >
-                      Подтвердить
+                      Confirm
                     </button>
                     <button
                       onClick={() => {
@@ -247,7 +281,7 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
                       }}
                       className="btn-cancel"
                     >
-                      Отмена
+                      Cancel
                     </button>
                   </div>
                 </div>
@@ -259,44 +293,52 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
         {tab === "appearance" && (
           <div className="settings-section">
             <div className="settings-field">
-              <label>Стиль сообщений</label>
+              <label>Message Bubbles</label>
               <div className="style-options">
                 <button
                   className={`style-btn ${messageStyle === "rounded" ? "active" : ""}`}
                   onClick={() => setMessageStyle("rounded")}
                 >
                   <div className="preview rounded-preview" />
-                  Круглые
+                  Rounded
                 </button>
                 <button
                   className={`style-btn ${messageStyle === "square" ? "active" : ""}`}
                   onClick={() => setMessageStyle("square")}
                 >
                   <div className="preview square-preview" />
-                  Квадратные
+                  Square
                 </button>
               </div>
             </div>
 
             <div className="settings-field">
-              <label>Тема оформления</label>
+              <label>Theme</label>
               <div className="style-options">
                 <button
                   className={`style-btn ${theme === "dark" ? "active" : ""}`}
                   onClick={() => setTheme("dark")}
                 >
                   <div className="preview dark-preview" />
-                  Темная
+                  Dark
                 </button>
                 <button
                   className={`style-btn ${theme === "light" ? "active" : ""}`}
                   onClick={() => setTheme("light")}
                 >
                   <div className="preview light-preview" />
-                  Светлая
+                  Light
                 </button>
               </div>
             </div>
+
+            <button
+              onClick={handleUpdatePreferences}
+              className="btn-save wide"
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Preferences"}
+            </button>
           </div>
         )}
       </div>

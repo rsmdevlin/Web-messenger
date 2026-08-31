@@ -3,9 +3,10 @@ import "./Composer.css";
 
 interface Props {
   onSendMessage: (content: string) => void;
+  onChange?: (isEmpty: boolean) => void;
 }
 
-export default function Composer({ onSendMessage }: Props) {
+export default function Composer({ onSendMessage, onChange }: Props) {
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -16,6 +17,10 @@ export default function Composer({ onSendMessage }: Props) {
       textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 100) + "px";
     }
   }, [messageInput]);
+
+  useEffect(() => {
+    onChange?.(messageInput.trim().length === 0);
+  }, [messageInput, onChange]);
 
   const handleSend = async () => {
     if (!messageInput.trim() || sending) return;
@@ -47,7 +52,7 @@ export default function Composer({ onSendMessage }: Props) {
         value={messageInput}
         onChange={(e) => setMessageInput(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Сообщение..."
+        placeholder="Message..."
         disabled={sending}
         className="composer-input"
         rows={1}

@@ -124,7 +124,7 @@
   justify-content: center;
 }
 
-.upload-avatar-btn {
+.upload-btn {
   padding: var(--space-3) var(--space-6);
   border: 1.5px solid var(--accent);
   border-radius: var(--radius-md);
@@ -135,8 +135,13 @@
   transition: var(--transition);
 }
 
-.upload-avatar-btn:hover {
+.upload-btn:hover:not(:disabled) {
   background: rgba(91, 141, 255, 0.1);
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .settings-field {
@@ -170,7 +175,7 @@
   color: var(--text);
 }
 
-.field-display button {
+.btn-edit {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-muted);
   border-radius: var(--radius-md);
@@ -181,7 +186,7 @@
   transition: var(--transition);
 }
 
-.field-display button:hover {
+.btn-edit:hover {
   border-color: var(--accent);
   background: rgba(91, 141, 255, 0.05);
 }
@@ -206,6 +211,11 @@
   border-color: var(--accent);
   outline: none;
   box-shadow: 0 0 0 3px rgba(91, 141, 255, 0.1);
+}
+
+.field-edit input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .email-verify {
@@ -233,9 +243,18 @@
   color: white;
 }
 
-.btn-save:hover {
+.btn-save:hover:not(:disabled) {
   background: var(--accent-light);
   box-shadow: 0 4px 12px rgba(91, 141, 255, 0.3);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-save.wide {
+  width: 100%;
 }
 
 .btn-cancel {
@@ -316,6 +335,17 @@
   margin-bottom: var(--space-4);
 }
 
+.settings-success {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: rgba(81, 207, 102, 0.1);
+  border: 1px solid rgba(81, 207, 102, 0.3);
+  color: #51CF66;
+  font-size: var(--text-sm);
+  animation: slideInDown 0.3s ease;
+  margin-bottom: var(--space-4);
+}
+
 @media (max-width: 480px) {
   .settings-header {
     padding: var(--space-3);
@@ -352,3 +382,4 @@
     font-size: 40px;
   }
 }
+
