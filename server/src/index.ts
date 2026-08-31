@@ -83,7 +83,15 @@ app.post("/api/auth/register", async (req: Request, res: Response) => {
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
     }
-    const conn = await pool.getConnection();
+
+    let conn;
+    try {
+      conn = await pool.getConnection();
+    } catch (dbErr: any) {
+      console.error("❌ Database connection failed:", dbErr.message);
+      return res.status(500).json({ error: "Database connection error: " + dbErr.message });
+    }
+
     try {
       const [rows]: any = await conn.execute(
         "SELECT id FROM users WHERE email = ?",
@@ -132,7 +140,7 @@ app.post("/api/auth/register", async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error("Register error:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error: " + (error as any).message });
   }
 });
 
@@ -142,7 +150,15 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
     }
-    const conn = await pool.getConnection();
+
+    let conn;
+    try {
+      conn = await pool.getConnection();
+    } catch (dbErr: any) {
+      console.error("❌ Database connection failed:", dbErr.message);
+      return res.status(500).json({ error: "Database connection error: " + dbErr.message });
+    }
+
     try {
       const [rows]: any = await conn.execute(
         "SELECT id, username, email, password_hash, display_name, avatar, theme, message_style FROM users WHERE email = ?",
@@ -179,7 +195,7 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error: " + (error as any).message });
   }
 });
 
@@ -593,4 +609,6 @@ app.get("*", (req, res) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  console.log(`📚 Database URL: ${process.env.DATABASE_URL ? 'SET' : '❌ NOT SET'}`);
+  console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'default (http://localhost:5173)'}`);
 });
