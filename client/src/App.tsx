@@ -1,165 +1,264 @@
-import { useEffect, useState } from "react"
-import axios from "axios"
-import "./App.css"
+import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { io, Socket } from "socket.io-client";
+import "./App.css";
 
 interface User {
-  id: number
-  username: string
-  email: string
+  id: number;
+  username: string;
+  email?: string;
 }
 
 interface Chat {
-  id: number
-  name: string
-  type: string
+  id: number;
+  name: string;
+  type: string;
+  created_by: number;
+  created_at: string;
 }
 
-export default function App() {
-  const [user, setUser] = useState<User | null>(null)
-  const [chats, setChats] = useState<Chat[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showLogin, setShowLogin] = useState(true)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [username, setUsername] = useState("")
-  const [isRegistering, setIsRegistering] = useState(false)
+interface Message {
+  id: number;
+  chat_id: number;
+  sender_id: number;
+  content: string;
+  type: string;
+  is_read: number;
+  created_at: string;
+}
 
-  const API_URL = import.meta.env.VITE_API_URL || "/api"
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+});
+
+export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageInput, setMessageInput] = useState("");
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = io(window.location.origin, { reconnection: true });
+    socketRef.current = socket;
+
+    socket.on("connect", () => console.log("Socket connected"));
+    socket.on("new-message", (data: any) => {
+      if (data.chatId === selectedChat?.id) {
+        setMessages((prev) => [...prev, data]);
+      }
+    });
+
+    return () => socket.disconnect();
+  }, [user, selectedChat]);
 
   const checkAuth = async () => {
     try {
-      const res = await axios.get(`${API_URL}/auth/me`, { withCredentials: true })
-      setUser(res.data)
-      setShowLogin(false)
-      loadChats()
+      const res = await api.get("/auth/me");
+      setUser(res.data);
+      loadChats();
     } catch {
-      setShowLogin(true)
+      setUser(null);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadChats = async () => {
     try {
-      const res = await axios.get(`${API_URL}/chats`, { withCredentials: true })
-      setChats(res.data)
+      const res = await api.get("/chats");
+      setChats(res.data || []);
     } catch (error) {
-      console.error("Failed to load chats:", error)
+      console.error("Failed to load chats", error);
     }
-  }
+  };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const loadMessages = async (chatId: number) => {
     try {
-      await axios.post(`${API_URL}/auth/login`, { email, password }, { withCredentials: true })
-      await checkAuth()
-      setEmail("")
-      setPassword("")
+      const res = await api.get(`/chats/${chatId}/messages`);
+      setMessages(res.data || []);
     } catch (error) {
-      alert("Login failed")
+      console.error("Failed to load messages", error);
     }
-  }
+  };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      await axios.post(`${API_URL}/auth/register`, { username, email, password }, { withCredentials: true })
-      alert("Registration successful!")
-      setIsRegistering(false)
-      setEmail("")
-      setPassword("")
-      setUsername("")
-    } catch (error) {
-      alert("Registration failed")
+      const endpoint = isRegistering ? "/auth/register" : "/auth/login";
+      const res = await api.post(endpoint, formData);
+      setUser(res.data);
+      setFormData({ username: "", email: "", password: "" });
+      loadChats();
+    } catch (error: any) {
+      alert(error.response?.data?.error || "Auth failed");
     }
-  }
+  };
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true })
-      setUser(null)
-      setShowLogin(true)
-      setChats([])
+      await api.post("/auth/logout");
+      setUser(null);
+      setChats([]);
+      setSelectedChat(null);
+      setMessages([]);
     } catch (error) {
-      console.error("Logout failed:", error)
+      console.error("Logout failed", error);
     }
-  }
+  };
 
   const handleCreateChat = async () => {
-    const name = prompt("Enter chat name:")
-    if (!name) return
+    const name = prompt("Enter chat name:");
+    if (!name) return;
+
     try {
-      await axios.post(`${API_URL}/chats`, { name }, { withCredentials: true })
-      await loadChats()
+      const res = await api.post("/chats", { name, type: "private" });
+      const newChat = res.data;
+      setChats((prev) => [newChat, ...prev]);
+      setSelectedChat(newChat);
+      setMessages([]);
     } catch (error) {
-      alert("Failed to create chat")
+      console.error("Failed to create chat", error);
     }
-  }
+  };
 
-  if (loading) {
-    return <div className="container"><p>Loading...</p></div>
-  }
+  const handleSelectChat = async (chat: Chat) => {
+    setSelectedChat(chat);
+    await loadMessages(chat.id);
+    socketRef.current?.emit("join-chat", chat.id);
+  };
 
-  if (showLogin) {
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageInput.trim() || !selectedChat) return;
+
+    try {
+      const res = await api.post(`/chats/${selectedChat.id}/messages`, {
+        content: messageInput,
+        type: "text",
+      });
+      setMessages((prev) => [...prev, res.data]);
+      setMessageInput("");
+      socketRef.current?.emit("send-message", {
+        chatId: selectedChat.id,
+        content: messageInput,
+        type: "text",
+      });
+    } catch (error) {
+      console.error("Failed to send message", error);
+    }
+  };
+
+  if (loading) return <div className="container">Loading...</div>;
+
+  if (!user) {
     return (
-      <div className="auth-container">
-        <div className="auth-card">
+      <div className="container auth-container">
+        <div className="auth-box">
           <h1>Web Messenger</h1>
-          {isRegistering ? (
-            <>
-              <h2>Create Account</h2>
-              <form onSubmit={handleRegister}>
-                <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                <button type="submit">Register</button>
-              </form>
-              <p>Already have account? <button type="button" className="link-btn" onClick={() => setIsRegistering(false)}>Login</button></p>
-            </>
-          ) : (
-            <>
-              <h2>Login</h2>
-              <form onSubmit={handleLogin}>
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                <button type="submit">Login</button>
-              </form>
-              <p>No account? <button type="button" className="link-btn" onClick={() => setIsRegistering(true)}>Register</button></p>
-            </>
-          )}
+          <form onSubmit={handleAuth}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              required
+            />
+            {isRegistering && (
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            )}
+            <input
+              type="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+            />
+            <button type="submit">{isRegistering ? "Register" : "Login"}</button>
+          </form>
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setFormData({ username: "", email: "", password: "" });
+            }}
+          >
+            {isRegistering ? "Already have an account? Login" : "Create account? Register"}
+          </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="messenger">
+    <div className="container messenger-container">
       <div className="sidebar">
-        <div className="sidebar-header">
-          <h2>Chats</h2>
-          <button className="new-chat-btn" onClick={handleCreateChat}>+</button>
+        <div className="user-header">
+          <h2>Hi, {user.username}!</h2>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
-        <div className="chat-list">
+        <button onClick={handleCreateChat} className="create-chat-btn">+ New Chat</button>
+        <div className="chats-list">
           {chats.map((chat) => (
-            <div key={chat.id} className="chat-item">
-              <div className="chat-name">{chat.name}</div>
+            <div
+              key={chat.id}
+              className={`chat-item ${selectedChat?.id === chat.id ? "active" : ""}`}
+              onClick={() => handleSelectChat(chat)}
+            >
+              {chat.name}
             </div>
           ))}
         </div>
-        <div className="sidebar-footer">
-          <div className="user-info">{user?.username}</div>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
-        </div>
       </div>
-      <div className="main-content">
-        <div className="empty-state">
-          <p>Select a chat to start messaging</p>
-        </div>
+
+      <div className="chat-area">
+        {selectedChat ? (
+          <>
+            <div className="chat-header">
+              <h3>{selectedChat.name}</h3>
+            </div>
+            <div className="messages-area">
+              {messages.map((msg) => (
+                <div key={msg.id} className={`message ${msg.sender_id === user.id ? "sent" : "received"}`}>
+                  <p className="message-content">{msg.content}</p>
+                  <span className="message-time">{new Date(msg.created_at).toLocaleTimeString()}</span>
+                </div>
+              ))}
+            </div>
+            <form onSubmit={handleSendMessage} className="message-form">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+              />
+              <button type="submit">Send</button>
+            </form>
+          </>
+        ) : (
+          <div className="chat-placeholder">
+            <p>Select a chat or create a new one to start messaging</p>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
