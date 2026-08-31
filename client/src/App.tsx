@@ -143,7 +143,13 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg-primary)" }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100dvh",
+        background: "var(--bg)",
+      }}>
         <div style={{ color: "var(--text-muted)" }}>Loading...</div>
       </div>
     );
@@ -176,7 +182,13 @@ export default function App() {
             onSendMessage={handleSendMessage}
           />
         ) : (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--text-muted)" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "var(--text-muted)",
+          }}>
             Select a chat to start messaging
           </div>
         )
