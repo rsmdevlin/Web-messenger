@@ -17,9 +17,12 @@ CREATE TABLE IF NOT EXISTS chats (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
   type ENUM('private', 'group') DEFAULT 'private',
+  created_by INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_type (type)
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_type (type),
+  INDEX idx_created_by (created_by)
 );
 
 -- Chat members table
@@ -42,7 +45,7 @@ CREATE TABLE IF NOT EXISTS messages (
   sender_id INT NOT NULL,
   content TEXT NOT NULL,
   type ENUM('text', 'image', 'file') DEFAULT 'text',
-  read BOOLEAN DEFAULT 0,
+  is_read TINYINT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
@@ -53,7 +56,7 @@ CREATE TABLE IF NOT EXISTS messages (
   INDEX idx_created_at (created_at)
 );
 
--- Sessions table (optional - for DB-backed sessions)
+-- Sessions table
 CREATE TABLE IF NOT EXISTS sessions (
   id VARCHAR(255) PRIMARY KEY,
   user_id INT NOT NULL,
