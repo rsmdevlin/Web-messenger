@@ -1,160 +1,107 @@
-/* App container */
 #root {
   width: 100%;
   height: 100%;
   height: 100dvh;
   display: flex;
-  flex-direction: column;
   overflow: hidden;
 }
 
-html, body {
+.app {
+  display: flex;
   width: 100%;
   height: 100%;
   height: 100dvh;
-  margin: 0;
-  padding: 0;
 }
 
-body {
+.app-sidebar {
+  display: none;
+  width: 100%;
+  height: 100%;
   background: var(--bg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Space Grotesk", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
-  /* Disable browser context menu and selection */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
-/* Allow text selection ONLY in message and input areas */
-.message-text,
-.composer-field,
-input[type="text"],
-input[type="email"],
-input[type="password"],
-textarea {
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  user-select: text;
+.app-main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
 }
 
-/* Prevent drag and drop globally */
-* {
-  -webkit-user-drag: none;
-  user-drag: none;
+.empty-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: var(--text-lg);
 }
 
-/* Interactive elements */
-button, a, [role="button"] {
-  cursor: pointer;
-  pointer-events: auto;
-  -webkit-user-select: none;
-  user-select: none;
+.app-loading {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
 }
 
-/* SVG and images - no pointer events */
-img, svg {
-  pointer-events: none;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-/* Context menu - DISABLE */
-body, #root, .main-layout, .chat-window, .chat-sidebar {
-  position: relative;
-}
+/* Desktop Layout — Side by side */
+@media (min-width: 1024px) {
+  .app {
+    gap: 0;
+  }
 
-body::before {
-  /* Block right-click context menu */
-  content: "";
-}
+  .app-sidebar {
+    display: flex;
+    width: 320px;
+    height: 100%;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-muted);
+  }
 
-/* Premium dark theme scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-muted);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-dim);
-}
-
-/* Selection styling */
-::selection {
-  background: var(--accent);
-  color: white;
-}
-
-/* Focus visible for accessibility */
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Remove browser zoom on input focus on iOS */
-input,
-textarea,
-select {
-  font-size: 16px;
-  -webkit-appearance: none;
-  -webkit-border-radius: 0;
-  appearance: none;
-}
-
-/* Animations respect prefers-reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .app-main {
+    flex: 1;
   }
 }
 
-/* Responsive typography */
-@media (max-width: 1024px) {
-  :root {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  :root {
-    font-size: 13px;
-  }
-
-  body {
-    position: fixed;
+/* Mobile — Sidebar hidden by default, shown on demand */
+@media (max-width: 1023px) {
+  .app-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    height: 100dvh;
+    z-index: var(--z-modal);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .app-sidebar.visible {
+    transform: translateX(0);
+    display: flex;
+  }
+
+  .app-main {
+    width: 100%;
   }
 }
 
-/* Prevent double-tap zoom on buttons */
-button {
-  touch-action: manipulation;
-}
-
-/* Safe area for notched devices */
-@supports (padding: env(safe-area-inset-top)) {
-  body {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
