@@ -1,13 +1,21 @@
-import { Message, User } from "../types";
 import "./MessageBubble.css";
+
+interface Message {
+  id: number;
+  chat_id: number;
+  sender_id: number;
+  content: string;
+  type: string;
+  is_read: number;
+  created_at: string;
+}
 
 interface Props {
   message: Message;
-  user: User;
   isOwn: boolean;
 }
 
-export default function MessageBubble({ message, user, isOwn }: Props) {
+export default function MessageBubble({ message, isOwn }: Props) {
   const formattedTime = new Date(message.created_at).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
