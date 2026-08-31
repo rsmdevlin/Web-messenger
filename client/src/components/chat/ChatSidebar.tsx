@@ -35,7 +35,7 @@ export default function ChatSidebar({
   onLogout,
 }: Props) {
   const handleCreateChat = () => {
-    const name = prompt("РРјСЏ С‡Р°С‚Р°:");
+    const name = prompt("Имя чата:");
     if (name) onCreateChat(name);
   };
 
@@ -46,7 +46,7 @@ export default function ChatSidebar({
   return (
     <div className="chat-sidebar">
       <div className="list-header">
-        <h1>РЎРѕРѕР±С‰РµРЅРёСЏ</h1>
+        <h1>Сообщения</h1>
         <div className="search">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
             <circle cx="6.5" cy="6.5" r="5" stroke="var(--text-muted)" strokeWidth="1.4"/>
@@ -54,7 +54,7 @@ export default function ChatSidebar({
           </svg>
           <input
             type="text"
-            placeholder="РџРѕРёСЃРє"
+            placeholder="Поиск"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="search-input"
@@ -65,9 +65,9 @@ export default function ChatSidebar({
       <div className="rows">
         {filteredChats.length === 0 ? (
           <div className="empty-state">
-            <p>РќРµС‚ С‡Р°С‚РѕРІ</p>
+            <p>Нет чатов</p>
             <button onClick={handleCreateChat} className="new-chat-action">
-              + РЎРѕР·РґР°С‚СЊ С‡Р°С‚
+              + Создать чат
             </button>
           </div>
         ) : (
@@ -96,7 +96,7 @@ export default function ChatSidebar({
                     <span className="row-time">12:41</span>
                   </div>
                   <div className="row-bottom">
-                    <span className="row-preview">РџРѕСЃР»РµРґРЅРµРµ СЃРѕРѕР±С‰РµРЅРёРµ</span>
+                    <span className="row-preview">Последнее сообщение</span>
                     <span className="badge">2</span>
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export default function ChatSidebar({
           </div>
           <div className="user-name">{user.username}</div>
         </div>
-        <button className="logout-btn" onClick={onLogout} title="Р’С‹С…РѕРґ">
+        <button className="logout-btn" onClick={onLogout} title="Выход">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M1 8H11M11 8L8 5M11 8L8 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M11 1H13C14.1 1 15 1.9 15 3V13C15 14.1 14.1 15 13 15H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
