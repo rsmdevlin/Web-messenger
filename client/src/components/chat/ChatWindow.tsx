@@ -35,7 +35,6 @@ interface Props {
 
 export default function ChatWindow({ chat, messages, user, onSendMessage }: Props) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -87,7 +86,6 @@ export default function ChatWindow({ chat, messages, user, onSendMessage }: Prop
               <MessageBubble
                 key={msg.id}
                 message={msg}
-                user={user}
                 isOwn={isOwn}
               />
             );
