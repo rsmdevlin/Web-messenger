@@ -1,0 +1,1 @@
+{"name":"web-messenger","version":"1.0.0","description":"Modern Web Messenger","private":true,"scripts":{"build":"npm run build:server && npm run build:client","build:server":"cd server && npm install && npm run build","build:client":"cd client && npm install && npm run build","start":"node server/dist/index.js"},"workspaces":["server","client"]}
