@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import "./App.css";
+import AuthScreen from "./components/auth/AuthScreen";
+import MainLayout from "./components/layout/MainLayout";
+import ChatSidebar from "./components/chat/ChatSidebar";
+import ChatWindow from "./components/chat/ChatWindow";
 
 interface User {
   id: number;
@@ -36,12 +40,10 @@ const api = axios.create({
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messageInput, setMessageInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -50,17 +52,14 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-
     const socket = io(window.location.origin, { reconnection: true });
     socketRef.current = socket;
-
     socket.on("connect", () => console.log("Socket connected"));
     socket.on("new-message", (data: any) => {
       if (data.chatId === selectedChat?.id) {
         setMessages((prev) => [...prev, data]);
       }
     });
-
     return () => socket.disconnect();
   }, [user, selectedChat]);
 
@@ -94,16 +93,39 @@ export default function App() {
     }
   };
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSelectChat = async (chat: Chat) => {
+    setSelectedChat(chat);
+    await loadMessages(chat.id);
+    socketRef.current?.emit("join-chat", chat.id);
+  };
+
+  const handleCreateChat = async (name: string) => {
     try {
-      const endpoint = isRegistering ? "/auth/register" : "/auth/login";
-      const res = await api.post(endpoint, formData);
-      setUser(res.data);
-      setFormData({ username: "", email: "", password: "" });
-      loadChats();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Auth failed");
+      const res = await api.post("/chats", { name, type: "private" });
+      const newChat = res.data;
+      setChats((prev) => [newChat, ...prev]);
+      setSelectedChat(newChat);
+      setMessages([]);
+    } catch (error) {
+      console.error("Failed to create chat", error);
+    }
+  };
+
+  const handleSendMessage = async (content: string) => {
+    if (!selectedChat || !content.trim()) return;
+    try {
+      const res = await api.post(`/chats/${selectedChat.id}/messages`, {
+        content,
+        type: "text",
+      });
+      setMessages((prev) => [...prev, res.data]);
+      socketRef.current?.emit("send-message", {
+        chatId: selectedChat.id,
+        content,
+        type: "text",
+      });
+    } catch (error) {
+      console.error("Failed to send message", error);
     }
   };
 
@@ -119,146 +141,46 @@ export default function App() {
     }
   };
 
-  const handleCreateChat = async () => {
-    const name = prompt("Enter chat name:");
-    if (!name) return;
-
-    try {
-      const res = await api.post("/chats", { name, type: "private" });
-      const newChat = res.data;
-      setChats((prev) => [newChat, ...prev]);
-      setSelectedChat(newChat);
-      setMessages([]);
-    } catch (error) {
-      console.error("Failed to create chat", error);
-    }
-  };
-
-  const handleSelectChat = async (chat: Chat) => {
-    setSelectedChat(chat);
-    await loadMessages(chat.id);
-    socketRef.current?.emit("join-chat", chat.id);
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!messageInput.trim() || !selectedChat) return;
-
-    try {
-      const res = await api.post(`/chats/${selectedChat.id}/messages`, {
-        content: messageInput,
-        type: "text",
-      });
-      setMessages((prev) => [...prev, res.data]);
-      setMessageInput("");
-      socketRef.current?.emit("send-message", {
-        chatId: selectedChat.id,
-        content: messageInput,
-        type: "text",
-      });
-    } catch (error) {
-      console.error("Failed to send message", error);
-    }
-  };
-
-  if (loading) return <div className="container">Loading...</div>;
-
-  if (!user) {
+  if (loading) {
     return (
-      <div className="container auth-container">
-        <div className="auth-box">
-          <h1>Web Messenger</h1>
-          <form onSubmit={handleAuth}>
-            <input
-              type="text"
-              placeholder="Username"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              required
-            />
-            {isRegistering && (
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            )}
-            <input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-            />
-            <button type="submit">{isRegistering ? "Register" : "Login"}</button>
-          </form>
-          <button
-            type="button"
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              setFormData({ username: "", email: "", password: "" });
-            }}
-          >
-            {isRegistering ? "Already have an account? Login" : "Create account? Register"}
-          </button>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg-primary)" }}>
+        <div style={{ color: "var(--text-muted)" }}>Loading...</div>
       </div>
     );
   }
 
-  return (
-    <div className="container messenger-container">
-      <div className="sidebar">
-        <div className="user-header">
-          <h2>Hi, {user.username}!</h2>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
-        </div>
-        <button onClick={handleCreateChat} className="create-chat-btn">+ New Chat</button>
-        <div className="chats-list">
-          {chats.map((chat) => (
-            <div
-              key={chat.id}
-              className={`chat-item ${selectedChat?.id === chat.id ? "active" : ""}`}
-              onClick={() => handleSelectChat(chat)}
-            >
-              {chat.name}
-            </div>
-          ))}
-        </div>
-      </div>
+  if (!user) {
+    return <AuthScreen onAuthSuccess={checkAuth} />;
+  }
 
-      <div className="chat-area">
-        {selectedChat ? (
-          <>
-            <div className="chat-header">
-              <h3>{selectedChat.name}</h3>
-            </div>
-            <div className="messages-area">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`message ${msg.sender_id === user.id ? "sent" : "received"}`}>
-                  <p className="message-content">{msg.content}</p>
-                  <span className="message-time">{new Date(msg.created_at).toLocaleTimeString()}</span>
-                </div>
-              ))}
-            </div>
-            <form onSubmit={handleSendMessage} className="message-form">
-              <input
-                type="text"
-                placeholder="Type a message..."
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-              />
-              <button type="submit">Send</button>
-            </form>
-          </>
+  return (
+    <MainLayout
+      sidebar={
+        <ChatSidebar
+          chats={chats}
+          selectedChat={selectedChat}
+          onSelectChat={handleSelectChat}
+          onCreateChat={handleCreateChat}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          user={user}
+          onLogout={handleLogout}
+        />
+      }
+      main={
+        selectedChat ? (
+          <ChatWindow
+            chat={selectedChat}
+            messages={messages}
+            user={user}
+            onSendMessage={handleSendMessage}
+          />
         ) : (
-          <div className="chat-placeholder">
-            <p>Select a chat or create a new one to start messaging</p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--text-muted)" }}>
+            Select a chat to start messaging
           </div>
-        )}
-      </div>
-    </div>
+        )
+      }
+    />
   );
 }
