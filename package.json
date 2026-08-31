@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "build": "npm install --workspaces && npm run build --workspaces",
-    "dev": "npm run dev --workspace=server & npm run dev --workspace=client"
+    "dev": "npm run dev --workspace=server & npm run dev --workspace=client",
+    "start": "npm start --workspace=server"
   },
   "devDependencies": {
     "vite": "^4.4.0",
