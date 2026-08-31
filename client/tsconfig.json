@@ -13,11 +13,9 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client"]
   },
   "include": ["src"],
-  "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.app.json" }
-  ]
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
