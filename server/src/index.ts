@@ -1,11 +1,16 @@
 import express, { Express, Request, Response } from "express";
 import http from "http";
+import path from "path";
 import { Server as SocketIOServer } from "socket.io";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -282,9 +287,10 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(express.static("../client/dist"));
+const clientDistPath = path.join(__dirname, "../../client/dist");
+app.use(express.static(clientDistPath));
 app.get("*", (req: Request, res: Response) => {
-  res.sendFile("../client/dist/index.html", { root: process.cwd() });
+  res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
