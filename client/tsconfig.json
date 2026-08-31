@@ -7,14 +7,20 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "resolveJsonModule": true,
+
+    /* Bundler mode */
     "moduleResolution": "bundler",
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": false,
-    "jsx": "react-jsx",
     "allowImportingTsExtensions": true,
-    "types": ["vite/client"]
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
