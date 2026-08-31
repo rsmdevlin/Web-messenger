@@ -10,6 +10,8 @@
     "strict": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": false
   }
 }
