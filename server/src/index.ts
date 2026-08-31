@@ -8,6 +8,7 @@ import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,6 +57,34 @@ const pool = mysql.createPool({
   queueLimit: 0,
   uri: process.env.DATABASE_URL,
 });
+
+// Initialize database schema on startup
+async function initializeDatabase() {
+  try {
+    const conn = await pool.getConnection();
+    try {
+      const migrationSQL = fs.readFileSync(
+        path.join(__dirname, "../migrations/001_init_schema.sql"),
+        "utf-8"
+      );
+
+      // Split by semicolon and execute each statement
+      const statements = migrationSQL.split(";").filter(stmt => stmt.trim());
+      for (const statement of statements) {
+        if (statement.trim()) {
+          await conn.execute(statement);
+        }
+      }
+
+      console.log("✅ Database schema initialized successfully");
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("❌ Database initialization error:", error);
+    // Don't crash, let the server continue
+  }
+}
 
 const sessions = new Map<string, Session>();
 const typingUsers = new Map<string, Set<number>>();
@@ -607,8 +636,11 @@ app.get("*", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`📚 Database URL: ${process.env.DATABASE_URL ? 'SET' : '❌ NOT SET'}`);
   console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'default (http://localhost:5173)'}`);
+
+  // Initialize database schema
+  await initializeDatabase();
 });
