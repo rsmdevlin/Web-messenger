@@ -1,1 +1,27 @@
-{"name":"web-messenger","version":"1.0.0","description":"Modern Web Messenger","private":true,"scripts":{"build":"npm run build:server && npm run build:client","build:server":"cd server && npm install && npm run build","build:client":"cd client && npm install && npm run build","start":"node server/dist/index.js"},"workspaces":["server","client"]}
+{
+  "name": "web-messenger",
+  "version": "1.0.0",
+  "description": "Modern Web Messenger with real-time messaging",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd server && npm install && npm run build",
+    "build:client": "cd client && npm install && npm run build",
+    "start": "node server/dist/index.js",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm run dev"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "keywords": [
+    "messenger",
+    "chat",
+    "realtime",
+    "socket.io"
+  ],
+  "author": "",
+  "license": "MIT"
+}
