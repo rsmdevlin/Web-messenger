@@ -8,17 +8,68 @@
   overflow: hidden;
 }
 
-body {
-  margin: 0;
-  padding: 0;
+html, body {
   width: 100%;
   height: 100%;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+body {
   background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Space Grotesk", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
+  /* Disable browser context menu and selection */
   -webkit-user-select: none;
+  -moz-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
   user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection ONLY in message and input areas */
+.message-text,
+.composer-field,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+/* Prevent drag and drop globally */
+* {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+/* Interactive elements */
+button, a, [role="button"] {
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* SVG and images - no pointer events */
+img, svg {
+  pointer-events: none;
+}
+
+/* Context menu - DISABLE */
+body, #root, .main-layout, .chat-window, .chat-sidebar {
+  position: relative;
+}
+
+body::before {
+  /* Block right-click context menu */
+  content: "";
 }
 
 /* Premium dark theme scrollbar */
@@ -40,7 +91,7 @@ body {
   background: var(--text-dim);
 }
 
-/* Selection */
+/* Selection styling */
 ::selection {
   background: var(--accent);
   color: white;
@@ -54,19 +105,17 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* Remove browser tap highlight on mobile */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Prevent browser zoom on input focus on iOS */
+/* Remove browser zoom on input focus on iOS */
 input,
 textarea,
 select {
   font-size: 16px;
+  -webkit-appearance: none;
+  -webkit-border-radius: 0;
+  appearance: none;
 }
 
-/* Animations */
+/* Animations respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -93,19 +142,18 @@ select {
     position: fixed;
     width: 100%;
     height: 100%;
+    height: 100dvh;
   }
 }
 
-/* Prevent double tap zoom on buttons */
+/* Prevent double-tap zoom on buttons */
 button {
   touch-action: manipulation;
 }
 
-/* Safe area for notch devices */
+/* Safe area for notched devices */
 @supports (padding: env(safe-area-inset-top)) {
   body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
