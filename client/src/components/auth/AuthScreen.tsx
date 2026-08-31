@@ -30,7 +30,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
       onAuthSuccess();
     } catch (err: any) {
       // BUGFIX: Proper error message handling with UTF-8
-      setError(err.response?.data?.error || "РћС€РёР±РєР° Р°РІС‚РѕСЂРёР·Р°С†РёРё");
+      setError(err.response?.data?.error || "Ошибка авторизации");
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
         <form onSubmit={handleSubmit} className="auth-form">
           <input
             type="text"
-            placeholder="РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ"
+            placeholder="Имя пользователя"
             value={formData.username}
             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             disabled={loading}
@@ -65,7 +65,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           )}
           <input
             type="password"
-            placeholder="РџР°СЂРѕР»СЊ"
+            placeholder="Пароль"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             disabled={loading}
@@ -75,7 +75,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           {error && <div className="auth-error">{error}</div>}
 
           <button type="submit" disabled={loading} className="auth-button">
-            {loading ? "..." : isRegistering ? "Р РµРіРёСЃС‚СЂР°С†РёСЏ" : "Р’С…РѕРґ"}
+            {loading ? "..." : isRegistering ? "Регистрация" : "Вход"}
           </button>
         </form>
 
@@ -87,7 +87,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           }}
           className="auth-toggle"
         >
-          {isRegistering ? "РЈР¶Рµ РµСЃС‚СЊ Р°РєРєР°СѓРЅС‚? Р’С…РѕРґ" : "РЎРѕР·РґР°С‚СЊ Р°РєРєР°СѓРЅС‚? Р РµРіРёСЃС‚СЂР°С†РёСЏ"}
+          {isRegistering ? "Уже есть аккаунт? Вход" : "Создать аккаунт? Регистрация"}
         </button>
       </div>
     </div>
