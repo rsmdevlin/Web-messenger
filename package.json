@@ -1,22 +1,17 @@
 {
   "name": "web-messenger",
+  "private": true,
   "version": "1.0.0",
-  "description": "my messenger",
-  "type": "module",
-  "main": "server/dist/index.js",
-  "scripts": {
-    "build": "npm install --workspaces && npm run build --workspaces",
-    "start": "node server/dist/index.js",
-    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\""
-  },
   "workspaces": [
     "server",
     "client"
   ],
-  "dependencies": {
-    "concurrently": "^8.2.2"
+  "scripts": {
+    "build": "npm install --workspaces && npm run build --workspaces",
+    "dev": "npm run dev --workspace=server & npm run dev --workspace=client"
   },
-  "keywords": ["messenger", "chat", "socket.io", "react", "express"],
-  "author": "rsmdevlin",
-  "license": "MIT"
+  "devDependencies": {
+    "vite": "^4.4.0",
+    "@vitejs/plugin-react": "^4.0.0"
+  }
 }
