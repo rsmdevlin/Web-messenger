@@ -21,18 +21,26 @@ const io = new SocketIOServer(server, {
   },
 });
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true,
 }));
 
+// Serve static files from dist
+app.use(express.static(path.join(__dirname, "../../client/dist")));
+
 interface User {
   id: number;
   username: string;
   email: string;
   password_hash: string;
+  display_name?: string;
+  avatar?: string;
+  theme?: string;
+  message_style?: string;
   created_at: Date;
 }
 
@@ -60,10 +68,12 @@ const authMiddleware = (req: Request, res: Response, next: Function) => {
   next();
 };
 
+// Health check
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Auth endpoints
 app.post("/api/auth/register", async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
@@ -142,9 +152,26 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/auth/me", authMiddleware, (req: Request, res: Response) => {
-  const session = (req as any).session;
-  res.json({ id: session.userId, username: session.username });
+app.get("/api/auth/me", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const session = (req as any).session;
+    const conn = await pool.getConnection();
+    try {
+      const [rows]: any = await conn.execute(
+        "SELECT id, username, email, display_name, avatar, theme, message_style FROM users WHERE id = ?",
+        [session.userId]
+      );
+      if (rows.length === 0) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      res.json(rows[0]);
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Auth me error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 app.post("/api/auth/logout", (req: Request, res: Response) => {
@@ -153,19 +180,114 @@ app.post("/api/auth/logout", (req: Request, res: Response) => {
     sessions.delete(sessionId);
   }
   res.clearCookie("sessionId");
-  res.json({ message: "Logged out" });
+  res.json({ status: "ok" });
 });
 
-app.get("/api/chats", authMiddleware, async (req: Request, res: Response) => {
+// User endpoints
+app.put("/api/user/username", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).session.userId;
+    const { username } = req.body;
+    if (!username || !username.trim()) {
+      return res.status(400).json({ error: "Username required" });
+    }
+    const session = (req as any).session;
     const conn = await pool.getConnection();
     try {
-      const [rows]: any = await conn.execute(
-        "SELECT c.id, c.name, c.type, c.created_by, c.created_at FROM chats c JOIN chat_members cm ON c.id = cm.chat_id WHERE cm.user_id = ? ORDER BY c.created_at DESC",
-        [userId]
+      const [existing]: any = await conn.execute(
+        "SELECT id FROM users WHERE username = ? AND id != ?",
+        [username, session.userId]
       );
-      res.json(rows);
+      if (existing.length > 0) {
+        return res.status(409).json({ error: "Username already taken" });
+      }
+      await conn.execute(
+        "UPDATE users SET username = ? WHERE id = ?",
+        [username, session.userId]
+      );
+      sessions.get((req as any).sessionId)!.username = username;
+      res.json({ id: session.userId, username });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Update username error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.put("/api/user/email", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+    const session = (req as any).session;
+    const conn = await pool.getConnection();
+    try {
+      const [user]: any = await conn.execute(
+        "SELECT password_hash FROM users WHERE id = ?",
+        [session.userId]
+      );
+      const passwordMatch = await bcrypt.compare(password, user[0].password_hash);
+      if (!passwordMatch) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
+      const [existing]: any = await conn.execute(
+        "SELECT id FROM users WHERE email = ? AND id != ?",
+        [email, session.userId]
+      );
+      if (existing.length > 0) {
+        return res.status(409).json({ error: "Email already in use" });
+      }
+      await conn.execute(
+        "UPDATE users SET email = ? WHERE id = ?",
+        [email, session.userId]
+      );
+      res.json({ id: session.userId, email });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Update email error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.put("/api/user/profile", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { display_name, theme, message_style } = req.body;
+    const session = (req as any).session;
+    const conn = await pool.getConnection();
+    try {
+      await conn.execute(
+        "UPDATE users SET display_name = ?, theme = ?, message_style = ? WHERE id = ?",
+        [display_name || null, theme || "dark", message_style || "rounded", session.userId]
+      );
+      const [user]: any = await conn.execute(
+        "SELECT * FROM users WHERE id = ?",
+        [session.userId]
+      );
+      res.json(user[0]);
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Chats endpoints
+app.get("/api/chats", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const session = (req as any).session;
+    const conn = await pool.getConnection();
+    try {
+      const [chats]: any = await conn.execute(
+        "SELECT * FROM chats WHERE created_by = ? ORDER BY created_at DESC",
+        [session.userId]
+      );
+      res.json(chats || []);
     } finally {
       conn.release();
     }
@@ -177,23 +299,24 @@ app.get("/api/chats", authMiddleware, async (req: Request, res: Response) => {
 
 app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).session.userId;
-    const { name, type } = req.body;
-    if (!name || !type) {
-      return res.status(400).json({ error: "Missing required fields" });
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "Chat name required" });
     }
+    const session = (req as any).session;
     const conn = await pool.getConnection();
     try {
       const [result]: any = await conn.execute(
         "INSERT INTO chats (name, type, created_by, created_at) VALUES (?, ?, ?, NOW())",
-        [name, type, userId]
+        [name.trim(), "direct", session.userId]
       );
-      const chatId = result.insertId;
-      await conn.execute(
-        "INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, ?)",
-        [chatId, userId, "admin"]
-      );
-      res.status(201).json({ id: chatId, name, type, created_by: userId });
+      res.status(201).json({
+        id: result.insertId,
+        name: name.trim(),
+        type: "direct",
+        created_by: session.userId,
+        created_at: new Date().toISOString(),
+      });
     } finally {
       conn.release();
     }
@@ -203,24 +326,17 @@ app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/chats/:id/messages", authMiddleware, async (req: Request, res: Response) => {
+// Messages endpoints
+app.get("/api/messages/:chatId", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const userId = (req as any).session.userId;
+    const { chatId } = req.params;
     const conn = await pool.getConnection();
     try {
-      const [members]: any = await conn.execute(
-        "SELECT id FROM chat_members WHERE chat_id = ? AND user_id = ?",
-        [id, userId]
-      );
-      if (members.length === 0) {
-        return res.status(403).json({ error: "Access denied" });
-      }
       const [messages]: any = await conn.execute(
-        "SELECT id, chat_id, sender_id, content, type, is_read, created_at FROM messages WHERE chat_id = ? ORDER BY created_at ASC",
-        [id]
+        "SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at ASC LIMIT 100",
+        [chatId]
       );
-      res.json(messages);
+      res.json(messages || []);
     } finally {
       conn.release();
     }
@@ -230,35 +346,30 @@ app.get("/api/chats/:id/messages", authMiddleware, async (req: Request, res: Res
   }
 });
 
-app.post("/api/chats/:id/messages", authMiddleware, async (req: Request, res: Response) => {
+app.post("/api/messages", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const userId = (req as any).session.userId;
-    const { content, type } = req.body;
-    if (!content) {
-      return res.status(400).json({ error: "Content is required" });
+    const { chat_id, content } = req.body;
+    if (!chat_id || !content) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
+    const session = (req as any).session;
     const conn = await pool.getConnection();
     try {
-      const [members]: any = await conn.execute(
-        "SELECT id FROM chat_members WHERE chat_id = ? AND user_id = ?",
-        [id, userId]
-      );
-      if (members.length === 0) {
-        return res.status(403).json({ error: "Access denied" });
-      }
       const [result]: any = await conn.execute(
         "INSERT INTO messages (chat_id, sender_id, content, type, is_read, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
-        [id, userId, content, type || "text", 0]
+        [chat_id, session.userId, content, "text", 0]
       );
-      res.status(201).json({
+      const message = {
         id: result.insertId,
-        chat_id: id,
-        sender_id: userId,
+        chat_id,
+        sender_id: session.userId,
         content,
-        type: type || "text",
+        type: "text",
         is_read: 0,
-      });
+        created_at: new Date().toISOString(),
+      };
+      io.to(`chat_${chat_id}`).emit("new_message", message);
+      res.status(201).json(message);
     } finally {
       conn.release();
     }
@@ -268,33 +379,35 @@ app.post("/api/chats/:id/messages", authMiddleware, async (req: Request, res: Re
   }
 });
 
+// Socket.IO events
 io.on("connection", (socket) => {
-  console.log("Socket.IO client connected:", socket.id);
-  socket.on("join-chat", (chatId) => {
-    socket.join(`chat:${chatId}`);
+  socket.on("join_chat", (data: { chat_id: number }) => {
+    socket.join(`chat_${data.chat_id}`);
   });
-  socket.on("send-message", (data) => {
-    const { chatId, content, type } = data;
-    io.to(`chat:${chatId}`).emit("new-message", {
-      chatId,
-      content,
-      type: type || "text",
-      timestamp: new Date(),
+
+  socket.on("send_message", (data: { chat_id: number; content: string; sender_id: number }) => {
+    io.to(`chat_${data.chat_id}`).emit("new_message", {
+      chat_id: data.chat_id,
+      sender_id: data.sender_id,
+      content: data.content,
+      created_at: new Date().toISOString(),
     });
   });
-  socket.on("disconnect", () => {
-    console.log("Socket.IO client disconnected:", socket.id);
+
+  socket.on("typing", (data: { chat_id: number; username: string; isTyping: boolean }) => {
+    io.to(`chat_${data.chat_id}`).emit("typing", {
+      username: data.username,
+      isTyping: data.isTyping,
+    });
   });
 });
 
-const clientDistPath = path.join(__dirname, "../../client/dist");
-app.use(express.static(clientDistPath));
-app.get("*", (req: Request, res: Response) => {
-  res.sendFile(path.join(clientDistPath, "index.html"));
+// SPA fallback
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`WebSocket listening on ws://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
