@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import Composer from "./Composer";
 import "./ChatWindow.css";
