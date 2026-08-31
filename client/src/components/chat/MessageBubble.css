@@ -78,18 +78,36 @@
   .message-bubble-wrap {
     max-width: 85%;
   }
+
+  .bubble-content {
+    padding: 9px 12px;
+  }
+
+  .message-text {
+    font-size: var(--text-sm);
+  }
+
+  .message-time {
+    font-size: 9px;
+  }
 }
 
 @media (max-width: 480px) {
   .message-bubble-wrap {
     max-width: 90%;
+    margin-bottom: var(--space-1);
   }
 
   .bubble-content {
-    padding: 8px 12px;
+    padding: 8px 11px;
   }
 
   .message-text {
-    font-size: var(--text-sm);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .message-time {
+    font-size: 8px;
   }
 }
