@@ -1,0 +1,95 @@
+.message-bubble-wrap {
+  position: relative;
+  max-width: 76%;
+  display: flex;
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: var(--space-2);
+}
+
+.message-bubble-wrap.own {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.message-bubble-wrap.incoming {
+  align-self: flex-start;
+  margin-right: auto;
+}
+
+.bubble-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bubble-path {
+  fill-opacity: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes strokeDraw {
+  from {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+  }
+  to {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 0;
+  }
+}
+
+.bubble-content {
+  position: relative;
+  z-index: 1;
+  padding: 10px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.message-text {
+  font-size: var(--text-base);
+  line-height: 1.42;
+  color: var(--text);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.message-time {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.message-status {
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .message-bubble-wrap {
+    max-width: 85%;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-bubble-wrap {
+    max-width: 90%;
+  }
+
+  .bubble-content {
+    padding: 8px 12px;
+  }
+
+  .message-text {
+    font-size: var(--text-sm);
+  }
+}
