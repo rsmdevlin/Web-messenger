@@ -109,8 +109,8 @@ export default function ChatWindow({ chat, messages, user, onSendMessage }: Prop
       <div className="messages">
         {messages.length === 0 ? (
           <div className="empty-messages">
-            <p>РќРµС‚ СЃРѕРѕР±С‰РµРЅРёР№</p>
-            <span>РќР°С‡РЅРёС‚Рµ Р±РµСЃРµРґСѓ</span>
+            <p>Нет сообщений</p>
+            <span>Начните беседу</span>
           </div>
         ) : (
           messages.map((msg) => {
@@ -151,7 +151,7 @@ export default function ChatWindow({ chat, messages, user, onSendMessage }: Prop
           value={messageInput}
           onChange={handleComposerChange}
           onKeyDown={handleKeyDown}
-          placeholder="РЎРѕРѕР±С‰РµРЅРёРµ..."
+          placeholder="Сообщение..."
           disabled={sending}
           className="composer-field"
         />
