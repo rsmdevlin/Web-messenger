@@ -58,7 +58,6 @@ export default function ChatWindow({ chat, messages, user, onSendMessage }: Prop
 
   const handleComposerChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessageInput(e.target.value);
-    // Update has-text attribute
     if (composerRef.current) {
       composerRef.current.setAttribute(
         "data-has-text",
@@ -110,26 +109,29 @@ export default function ChatWindow({ chat, messages, user, onSendMessage }: Prop
       <div className="messages">
         {messages.length === 0 ? (
           <div className="empty-messages">
-            <p>No messages yet</p>
-            <span>Start the conversation</span>
+            <p>РќРµС‚ СЃРѕРѕР±С‰РµРЅРёР№</p>
+            <span>РќР°С‡РЅРёС‚Рµ Р±РµСЃРµРґСѓ</span>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`bubble-wrap ${msg.sender_id === user.id ? "own" : "incoming"}`}
-            >
-              <div className="bubble-inner">
-                <div className="message-text">{msg.content}</div>
-                <div className="msg-time">
-                  {new Date(msg.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+          messages.map((msg) => {
+            const isOwn = msg.sender_id === user.id;
+            return (
+              <div
+                key={msg.id}
+                className={`bubble-wrap ${isOwn ? "own" : "incoming"}`}
+              >
+                <div className="bubble-inner">
+                  <div className="message-text">{msg.content}</div>
+                  <div className="msg-time">
+                    {new Date(msg.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -149,7 +151,7 @@ export default function ChatWindow({ chat, messages, user, onSendMessage }: Prop
           value={messageInput}
           onChange={handleComposerChange}
           onKeyDown={handleKeyDown}
-          placeholder="Message..."
+          placeholder="РЎРѕРѕР±С‰РµРЅРёРµ..."
           disabled={sending}
           className="composer-field"
         />
