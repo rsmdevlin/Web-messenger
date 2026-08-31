@@ -107,11 +107,21 @@ export default function App() {
 
     newSocket.on("new_message", (data: Message) => {
       if (data && data.sender_id && selectedChat && data.chat_id === selectedChat.id) {
-        setMessages((prev) => [...prev, data]);
+        // Only add if not already in messages (avoid duplicates from own send)
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === data.id);
+          if (!exists) {
+            return [...prev, data];
+          }
+          return prev;
+        });
       }
     });
 
     newSocket.on("typing", (data: { username: string; isTyping: boolean; count: number }) => {
+      // Don't show typing indicator for current user
+      if (data.username === user.username) return;
+
       if (data.isTyping) {
         setTypingUsers((prev) => {
           if (!prev.includes(data.username)) {
