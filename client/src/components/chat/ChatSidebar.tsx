@@ -35,7 +35,7 @@ export default function ChatSidebar({
   onLogout,
 }: Props) {
   const handleCreateChat = () => {
-    const name = prompt("Chat name:");
+    const name = prompt("РРјСЏ С‡Р°С‚Р°:");
     if (name) onCreateChat(name);
   };
 
@@ -113,7 +113,7 @@ export default function ChatSidebar({
           </div>
           <div className="user-name">{user.username}</div>
         </div>
-        <button className="logout-btn" onClick={onLogout} title="Logout">
+        <button className="logout-btn" onClick={onLogout} title="Р’С‹С…РѕРґ">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M1 8H11M11 8L8 5M11 8L8 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M11 1H13C14.1 1 15 1.9 15 3V13C15 14.1 14.1 15 13 15H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
