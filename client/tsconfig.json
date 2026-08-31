@@ -12,7 +12,8 @@
     "moduleResolution": "bundler",
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
