@@ -56,8 +56,12 @@ export default function App() {
     socketRef.current = socket;
     socket.on("connect", () => console.log("Socket connected"));
     socket.on("new-message", (data: any) => {
+      // BUGFIX: РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СЃРѕРѕР±С‰РµРЅРёРµ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ С‡Р°С‚Р°
       if (data.chatId === selectedChat?.id) {
-        setMessages((prev) => [...prev, data]);
+        // РЈР±РµР¶РґР°РµРјСЃСЏ С‡С‚Рѕ РїСЂРёС€Р»Рѕ РІР°Р»РёРґРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ СЃ sender_id
+        if (data.sender_id) {
+          setMessages((prev) => [...prev, data]);
+        }
       }
     });
     return () => socket.disconnect();
@@ -87,6 +91,7 @@ export default function App() {
   const loadMessages = async (chatId: number) => {
     try {
       const res = await api.get(`/chats/${chatId}/messages`);
+      // BUGFIX: Р“Р°СЂР°РЅС‚РёСЂСѓРµРј С‡С‚Рѕ РІСЃРµ СЃРѕРѕР±С‰РµРЅРёСЏ РёРјРµСЋС‚ РїСЂР°РІРёР»СЊРЅС‹Р№ sender_id РёР· API
       setMessages(res.data || []);
     } catch (error) {
       console.error("Failed to load messages", error);
@@ -112,18 +117,27 @@ export default function App() {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedChat || !content.trim()) return;
+    if (!selectedChat || !content.trim() || !user) return;
     try {
+      // BUGFIX: API РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ message СЃ РїСЂР°РІРёР»СЊРЅС‹Рј sender_id
       const res = await api.post(`/chats/${selectedChat.id}/messages`, {
         content,
         type: "text",
       });
-      setMessages((prev) => [...prev, res.data]);
-      socketRef.current?.emit("send-message", {
-        chatId: selectedChat.id,
-        content,
-        type: "text",
-      });
+
+      // РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ response СЃРѕРґРµСЂР¶РёС‚ РІР°Р»РёРґРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
+      if (res.data && res.data.sender_id) {
+        setMessages((prev) => [...prev, res.data]);
+
+        // РћС‚РїСЂР°РІР»СЏРµРј С‡РµСЂРµР· Socket С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ СЃРѕР·РґР°РЅРёСЏ РІ Р‘Р”
+        socketRef.current?.emit("send-message", {
+          chatId: selectedChat.id,
+          content,
+          type: "text",
+          sender_id: user.id, // РЇРІРЅРѕ РїРµСЂРµРґР°РµРј sender_id
+          message_id: res.data.id,
+        });
+      }
     } catch (error) {
       console.error("Failed to send message", error);
     }
