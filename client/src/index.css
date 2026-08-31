@@ -1,51 +1,75 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --bg-primary: #0A0A0C;
+  --bg-surface: #111114;
+  --bg-surface-2: #17171B;
+  --border-color: #2E2E34;
+  --text-primary: #F2F0ED;
+  --text-muted: #8A8A92;
+  --text-dim: #57575F;
+  --accent: #5B8DFF;
+  --accent-light: #7BA3FF;
+  --danger: #FF5C5C;
+  --success: #4CAF50;
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Space Grotesk", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 #root {
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-button:hover {
-  border-color: #646cff;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  button {
-    background-color: #f9f9f9;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
+
+/* Transitions */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
