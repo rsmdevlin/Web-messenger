@@ -29,7 +29,8 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
       setFormData({ username: "", email: "", password: "" });
       onAuthSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Auth failed");
+      // BUGFIX: Proper error message handling with UTF-8
+      setError(err.response?.data?.error || "РћС€РёР±РєР° Р°РІС‚РѕСЂРёР·Р°С†РёРё");
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
         <form onSubmit={handleSubmit} className="auth-form">
           <input
             type="text"
-            placeholder="Username"
+            placeholder="РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ"
             value={formData.username}
             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             disabled={loading}
@@ -64,7 +65,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           )}
           <input
             type="password"
-            placeholder="Password"
+            placeholder="РџР°СЂРѕР»СЊ"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             disabled={loading}
@@ -74,7 +75,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           {error && <div className="auth-error">{error}</div>}
 
           <button type="submit" disabled={loading} className="auth-button">
-            {loading ? "..." : isRegistering ? "Register" : "Login"}
+            {loading ? "..." : isRegistering ? "Р РµРіРёСЃС‚СЂР°С†РёСЏ" : "Р’С…РѕРґ"}
           </button>
         </form>
 
@@ -86,7 +87,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
           }}
           className="auth-toggle"
         >
-          {isRegistering ? "Already have account? Login" : "Create account? Register"}
+          {isRegistering ? "РЈР¶Рµ РµСЃС‚СЊ Р°РєРєР°СѓРЅС‚? Р’С…РѕРґ" : "РЎРѕР·РґР°С‚СЊ Р°РєРєР°СѓРЅС‚? Р РµРіРёСЃС‚СЂР°С†РёСЏ"}
         </button>
       </div>
     </div>
