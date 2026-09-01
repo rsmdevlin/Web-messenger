@@ -7,6 +7,9 @@
   overflow: hidden;
   position: relative;
   box-shadow: inset -20px 0 30px rgba(0, 255, 65, 0.08);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ========== HEADER ========== */

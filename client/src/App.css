@@ -36,6 +36,9 @@
   overflow: hidden;
   position: relative;
   z-index: 2;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ========== MOBILE LAYOUT ========== */
