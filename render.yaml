@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: web-messenger
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: web-messenger-db
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://web-messenger-40e1.onrender.com
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAMESITE
+        value: "lax"
+
+databases:
+  - name: web-messenger-db
+    databaseName: web_messenger
+    user: postgres
