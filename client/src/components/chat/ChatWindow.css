@@ -21,6 +21,41 @@
   box-shadow: 0 4px 12px rgba(0, 255, 65, 0.1);
 }
 
+.header-back-btn {
+  display: none;
+  flex-shrink: 0;
+  background: transparent;
+  border: 2px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  cursor: pointer;
+  color: var(--color-accent-primary);
+  transition: all var(--duration-fast) var(--easing-ease-in-out);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+}
+
+.header-back-btn:hover {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 16px rgba(0, 255, 65, 0.4);
+  transform: scale(1.05);
+}
+
+.header-back-btn:active {
+  transform: scale(0.95);
+}
+
+.header-back-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
 .header-avatar {
   position: relative;
   flex-shrink: 0;

@@ -453,6 +453,7 @@ app.get("/api/chats", authMiddleware, async (req: Request, res: Response) => {
       const result = (chats || []).map((chat: any) => ({
         ...chat,
         name: chat.chat_display_name || chat.name,
+        chat_display_name: chat.chat_display_name,
       }));
       res.json(result);
     } finally {
@@ -540,6 +541,13 @@ app.post("/api/messages", authMiddleware, async (req: Request, res: Response) =>
     const session = (req as any).session;
     const conn = await pool.getConnection();
     try {
+      // Check if this is the first message in the chat
+      const [existingMessages]: any = await conn.execute(
+        "SELECT COUNT(*) as count FROM messages WHERE chat_id = ?",
+        [chat_id]
+      );
+      const isFirstMessage = existingMessages[0].count === 0;
+
       const [result]: any = await conn.execute(
         "INSERT INTO messages (chat_id, sender_id, content, type, is_read, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
         [chat_id, session.userId, content, "text", 0]
@@ -566,6 +574,41 @@ app.post("/api/messages", authMiddleware, async (req: Request, res: Response) =>
       };
       console.log(`📢 Broadcasting message to room chat_${chat_id}:`, message);
       io.to(`chat_${chat_id}`).emit("new_message", message);
+
+      // If first message, broadcast new chat to both participants
+      if (isFirstMessage) {
+        const [chatData]: any = await conn.execute(
+          "SELECT id, name, type, created_by, created_at, target_user_id FROM chats WHERE id = ?",
+          [chat_id]
+        );
+
+        if (chatData.length > 0) {
+          const chat = chatData[0];
+
+          // For direct chats, get the other participant's info
+          if (chat.type === 'direct' && chat.target_user_id) {
+            const otherUserId = session.userId === chat.created_by ? chat.target_user_id : chat.created_by;
+
+            // Get other user's info for chat_display_name
+            const [otherUserRows]: any = await conn.execute(
+              "SELECT display_name FROM users WHERE id = ?",
+              [otherUserId]
+            );
+            const otherUserDisplayName = otherUserRows[0]?.display_name || chat.name;
+
+            const newChat = {
+              ...chat,
+              chat_display_name: otherUserDisplayName,
+            };
+
+            // Broadcast to both users
+            io.to(`user_${chat.created_by}`).emit("new_chat", newChat);
+            io.to(`user_${chat.target_user_id}`).emit("new_chat", newChat);
+            console.log(`🆕 Broadcasting new chat ${chat_id} to users ${chat.created_by} and ${chat.target_user_id}`);
+          }
+        }
+      }
+
       res.status(201).json(message);
     } finally {
       conn.release();
@@ -627,6 +670,20 @@ app.post("/api/messages/:messageId/reaction", authMiddleware, async (req: Reques
 
 io.on("connection", (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
+
+  // Get user ID from session
+  const sessionId = (socket.handshake.headers.cookie || "")
+    .split("; ")
+    .find(c => c.startsWith("sessionId="))
+    ?.split("=")[1];
+
+  if (sessionId && sessions.has(sessionId)) {
+    const session = sessions.get(sessionId);
+    if (session) {
+      socket.join(`user_${session.userId}`);
+      console.log(`✅ Socket ${socket.id} joined user room user_${session.userId}`);
+    }
+  }
 
   socket.on("join_chat", (data: { chat_id: number }) => {
     console.log(`👥 Socket ${socket.id} joining room chat_${data.chat_id}`);

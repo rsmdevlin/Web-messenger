@@ -60,37 +60,6 @@
   animation: slideInLeft 0.35s var(--easing-ease-in-out);
 }
 
-.mobile-back-btn {
-  position: absolute;
-  top: var(--space-4);
-  left: var(--space-4);
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--color-accent-primary);
-  background: transparent;
-  border-radius: var(--radius-md);
-  color: var(--color-accent-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-  transition: all var(--duration-fast) var(--easing-ease-in-out);
-  box-shadow: 0 0 12px rgba(0, 255, 65, 0.4);
-}
-
-.mobile-back-btn:hover {
-  background: rgba(0, 255, 65, 0.1);
-  color: var(--color-accent-primary);
-  transform: scale(1.08);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
-  text-shadow: 0 0 10px var(--color-accent-primary);
-}
-
-.mobile-back-btn:active {
-  transform: scale(0.95);
-}
-
 /* ========== DESKTOP LAYOUT ========== */
 .app-desktop-layout {
   display: flex;

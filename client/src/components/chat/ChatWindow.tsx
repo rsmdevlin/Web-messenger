@@ -11,6 +11,7 @@ interface Chat {
   created_by: number;
   created_at: string;
   target_user_id?: number;
+  chat_display_name?: string;
 }
 
 interface Message {
@@ -42,6 +43,8 @@ interface Props {
   typingUsers: string[];
   messagesEndRef: React.RefObject<HTMLDivElement>;
   isLoadingMessages?: boolean;
+  onBackClick?: () => void;
+  isMobile?: boolean;
 }
 
 export default function ChatWindow({
@@ -53,6 +56,8 @@ export default function ChatWindow({
   typingUsers,
   messagesEndRef,
   isLoadingMessages = false,
+  onBackClick,
+  isMobile = false,
 }: Props) {
   const composerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,13 +73,32 @@ export default function ChatWindow({
   return (
     <div className="chat-window" ref={containerRef}>
       <div className="chat-header">
+        {isMobile && onBackClick && (
+          <button
+            className="header-back-btn"
+            onClick={onBackClick}
+            title="Back to chats"
+            aria-label="Back to chats"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M12 16L6 10L12 4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
+
         <div className="header-avatar">
           <div className="avatar-circle">{chat.name[0].toUpperCase()}</div>
           <div className="online-indicator"></div>
         </div>
 
         <div className="header-info">
-          <h2 className="header-name">{chat.name}</h2>
+          <h2 className="header-name">{chat.chat_display_name || chat.name}</h2>
           <p className="header-status">
             {typingUsers.length > 0
               ? `${typingUsers.join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`

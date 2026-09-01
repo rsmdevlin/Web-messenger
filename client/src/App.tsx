@@ -34,6 +34,7 @@ interface Chat {
   created_at: string;
   target_user_id?: number;
   participants?: number[];
+  chat_display_name?: string;
 }
 
 interface Message {
@@ -167,6 +168,19 @@ export default function App() {
       } else {
         setTypingUsers((prev) => prev.filter((u) => u !== data.username));
       }
+    });
+
+    newSocket.on("new_chat", (data: Chat) => {
+      console.log("🆕 New chat received via Socket.IO:", data);
+      setChats((prev) => {
+        const exists = prev.some((c) => c.id === data.id);
+        if (exists) {
+          console.warn("⚠️ Chat already exists, skipping:", data.id);
+          return prev;
+        }
+        console.log("✅ Adding new chat to list:", data.id);
+        return [data, ...prev];
+      });
     });
 
     socketRef.current = newSocket;
@@ -398,25 +412,6 @@ export default function App() {
               onTouchStart={swipeHandlers.handleTouchStart}
               onTouchEnd={swipeHandlers.handleTouchEnd}
             >
-              <button
-                className="mobile-back-btn"
-                onClick={() => {
-                  setSelectedChat(null);
-                  setSearchQuery("");
-                }}
-                title="Back to chats"
-                aria-label="Back to chats"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M12 16L6 10L12 4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
               {user && (
                 <ChatWindow
                   chat={selectedChat}
@@ -427,6 +422,11 @@ export default function App() {
                   typingUsers={typingUsers}
                   messagesEndRef={messagesEndRef}
                   isLoadingMessages={loadingMessages}
+                  onBackClick={() => {
+                    setSelectedChat(null);
+                    setSearchQuery("");
+                  }}
+                  isMobile={true}
                 />
               )}
             </div>
