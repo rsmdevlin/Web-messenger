@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from "react";
+import MediaUpload from "../media/MediaUpload";
 import "./Composer.css";
 
 interface Props {
   onSendMessage: (content: string) => void;
   onChange?: (isEmpty: boolean) => void;
+  onSendMedia?: (file: File, preview: string) => void;
 }
 
-export default function Composer({ onSendMessage, onChange }: Props) {
+export default function Composer({ onSendMessage, onChange, onSendMedia }: Props) {
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showMediaUpload, setShowMediaUpload] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -43,15 +46,22 @@ export default function Composer({ onSendMessage, onChange }: Props) {
 
   const hasText = messageInput.trim().length > 0;
 
+  const handleMediaUpload = (file: File, preview: string) => {
+    onSendMedia?.(file, preview);
+    setShowMediaUpload(false);
+  };
+
   return (
-    <div className={`composer ${isFocused ? "focused" : ""}`}>
-      <div className="composer-container">
-        <button
-          className="composer-btn composer-attach"
-          title="Attach file"
-          aria-label="Attach file"
-          disabled={sending}
-        >
+    <>
+      <div className={`composer ${isFocused ? "focused" : ""}`}>
+        <div className="composer-container">
+          <button
+            className="composer-btn composer-attach"
+            title="Attach file"
+            aria-label="Attach file"
+            disabled={sending}
+            onClick={() => setShowMediaUpload(true)}
+          >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path
               d="M8 2V14M2 8H14"
@@ -122,5 +132,10 @@ export default function Composer({ onSendMessage, onChange }: Props) {
         </button>
       </div>
     </div>
+
+    {showMediaUpload && (
+      <MediaUpload onUpload={handleMediaUpload} onClose={() => setShowMediaUpload(false)} />
+    )}
+    </>
   );
 }

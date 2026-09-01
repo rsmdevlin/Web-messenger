@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import Composer from "./Composer";
 import Skeleton from "../common/Skeleton";
+import UserProfile from "../profile/UserProfile";
 import "./ChatWindow.css";
 
 interface Chat {
@@ -71,6 +72,7 @@ export default function ChatWindow({
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [readMessageIds, setReadMessageIds] = useState<Set<number>>(new Set());
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   // Get online status for direct chat
   const isTargetUserOnline = chat.target_user_id ? onlineUsers.has(chat.target_user_id) : false;
@@ -158,7 +160,13 @@ export default function ChatWindow({
         )}
 
         <div className="header-avatar">
-          <div className="avatar-circle">{chat.name[0].toUpperCase()}</div>
+          <div
+            className="avatar-circle"
+            onClick={() => chat.target_user_id && setShowUserProfile(true)}
+            style={{ cursor: chat.target_user_id ? "pointer" : "default" }}
+          >
+            {chat.name[0].toUpperCase()}
+          </div>
           <div className="online-indicator"></div>
         </div>
 
@@ -248,8 +256,20 @@ export default function ChatWindow({
         <Composer
           onSendMessage={handleSendMessage}
           onChange={handleComposerChange}
+          onSendMedia={(file, preview) => {
+            console.log("📸 Media selected:", file.name);
+          }}
         />
       </div>
+
+      {showUserProfile && chat.target_user_id && (
+        <UserProfile
+          userId={chat.target_user_id}
+          onClose={() => setShowUserProfile(false)}
+          isOnline={onlineUsers.has(chat.target_user_id)}
+          lastSeen={targetUserLastSeen}
+        />
+      )}
     </div>
   );
 }
