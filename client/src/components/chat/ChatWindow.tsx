@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import Composer from "./Composer";
 import Skeleton from "../common/Skeleton";
@@ -45,6 +45,8 @@ interface Props {
   isLoadingMessages?: boolean;
   onBackClick?: () => void;
   isMobile?: boolean;
+  socket?: any;
+  onMessageRead?: (messageIds: number[]) => void;
 }
 
 export default function ChatWindow({
@@ -58,9 +60,51 @@ export default function ChatWindow({
   isLoadingMessages = false,
   onBackClick,
   isMobile = false,
+  socket,
+  onMessageRead,
 }: Props) {
   const composerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [readMessageIds, setReadMessageIds] = useState<Set<number>>(new Set());
+
+  // Track message visibility and send read receipts
+  useEffect(() => {
+    if (!socket || !messagesContainerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const newlyRead: number[] = [];
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const messageId = parseInt(entry.target.getAttribute("data-message-id") || "0");
+            const element = entry.target as HTMLElement;
+            const isOwnMessage = element.getAttribute("data-is-own") === "true";
+
+            // Only send read receipt for other users' messages
+            if (!isOwnMessage && messageId && !readMessageIds.has(messageId)) {
+              newlyRead.push(messageId);
+              setReadMessageIds((prev) => new Set([...prev, messageId]));
+            }
+          }
+        });
+
+        if (newlyRead.length > 0 && socket.connected) {
+          console.log(`📖 Sending read receipt for messages:`, newlyRead);
+          socket.emit("mark_read", { chat_id: chat.id, message_ids: newlyRead });
+          onMessageRead?.(newlyRead);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    // Observe all message bubbles
+    const messageBubbles = messagesContainerRef.current.querySelectorAll("[data-message-id]");
+    messageBubbles.forEach((bubble) => observer.observe(bubble));
+
+    return () => observer.disconnect();
+  }, [socket, chat.id, readMessageIds, onMessageRead]);
 
   const handleSendMessage = (content: string) => {
     onSendMessage(content);
@@ -125,7 +169,7 @@ export default function ChatWindow({
         </div>
       </div>
 
-      <div className="messages-container">
+      <div className="messages-container" ref={messagesContainerRef}>
         {isLoadingMessages ? (
           <div className="messages-skeleton">
             <Skeleton type="message" height="40px" count={5} />
@@ -156,7 +200,13 @@ export default function ChatWindow({
             {messages.map((msg) => {
               const isOwn = msg.sender_id === user.id;
               return (
-                <MessageBubble key={msg.id} message={msg} isOwn={isOwn} />
+                <div
+                  key={msg.id}
+                  data-message-id={msg.id}
+                  data-is-own={isOwn}
+                >
+                  <MessageBubble message={msg} isOwn={isOwn} />
+                </div>
               );
             })}
             {typingUsers.length > 0 && (

@@ -720,6 +720,26 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("mark_read", async (data: { chat_id: number; message_ids: number[] }) => {
+    try {
+      const conn = await pool.getConnection();
+      try {
+        for (const messageId of data.message_ids) {
+          await conn.execute(
+            "UPDATE messages SET is_read = 1 WHERE id = ?",
+            [messageId]
+          );
+        }
+        console.log(`✅ Marked ${data.message_ids.length} messages as read in chat ${data.chat_id}`);
+        io.to(`chat_${data.chat_id}`).emit("message_read", { message_ids: data.message_ids });
+      } finally {
+        conn.release();
+      }
+    } catch (error) {
+      console.error("❌ Error marking messages as read:", error);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log(`❌ Client disconnected: ${socket.id}`);
     typingUsers.forEach((users) => {

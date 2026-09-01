@@ -427,6 +427,7 @@ export default function App() {
                     setSearchQuery("");
                   }}
                   isMobile={true}
+                  socket={socketRef.current}
                 />
               )}
             </div>
@@ -463,6 +464,7 @@ export default function App() {
                 typingUsers={typingUsers}
                 messagesEndRef={messagesEndRef}
                 isLoadingMessages={loadingMessages}
+                socket={socketRef.current}
               />
             ) : (
               <div className="empty-chat">

@@ -231,22 +231,27 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 3px;
+  gap: 4px;
   padding: var(--space-3) var(--space-4);
   background: rgba(0, 255, 65, 0.08);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--radius-md);
   min-width: 60px;
   box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+  animation: pulse 2s ease-in-out infinite;
 }
 
 .typing-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--color-accent-primary);
-  animation: typingDot 1.4s infinite;
-  box-shadow: 0 0 4px rgba(0, 255, 65, 0.6);
+  box-shadow: 0 0 4px rgba(0, 255, 65, 0.8);
+  animation: telegramTyping 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0s;
 }
 
 .typing-dot:nth-child(2) {
@@ -374,13 +379,13 @@
   }
 }
 
-@keyframes typingDot {
+@keyframes telegramTyping {
   0%, 60%, 100% {
-    opacity: 0.4;
-    transform: translateY(0);
+    opacity: 0.5;
+    transform: translateY(0px);
   }
   30% {
     opacity: 1;
-    transform: translateY(-8px);
+    transform: translateY(-10px);
   }
 }
