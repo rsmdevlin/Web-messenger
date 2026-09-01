@@ -527,6 +527,14 @@ app.post("/api/messages", authMiddleware, async (req: Request, res: Response) =>
         "INSERT INTO messages (chat_id, sender_id, content, type, is_read, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
         [chat_id, session.userId, content, "text", 0]
       );
+
+      // Get user display info
+      const [userRows]: any = await conn.execute(
+        "SELECT display_name, avatar FROM users WHERE id = ?",
+        [session.userId]
+      );
+      const userInfo = userRows[0] || {};
+
       const message = {
         id: result.insertId,
         chat_id,
@@ -536,8 +544,10 @@ app.post("/api/messages", authMiddleware, async (req: Request, res: Response) =>
         is_read: 0,
         created_at: new Date().toISOString(),
         username: session.username,
-        avatar: null,
+        displayName: userInfo.display_name,
+        avatar: userInfo.avatar || null,
       };
+      console.log(`📢 Broadcasting message to room chat_${chat_id}:`, message);
       io.to(`chat_${chat_id}`).emit("new_message", message);
       res.status(201).json(message);
     } finally {
@@ -599,11 +609,16 @@ app.post("/api/messages/:messageId/reaction", authMiddleware, async (req: Reques
 // ======================== SOCKET.IO EVENTS ========================
 
 io.on("connection", (socket) => {
+  console.log(`🔌 Client connected: ${socket.id}`);
+
   socket.on("join_chat", (data: { chat_id: number }) => {
+    console.log(`👥 Socket ${socket.id} joining room chat_${data.chat_id}`);
     socket.join(`chat_${data.chat_id}`);
+    console.log(`✅ Socket ${socket.id} joined chat_${data.chat_id}. Room size: ${io.to(`chat_${data.chat_id}`).sockets.size}`);
   });
 
   socket.on("send_message", (data: { chat_id: number; content: string; sender_id: number }) => {
+    console.log(`📨 send_message event received for chat ${data.chat_id}`);
     io.to(`chat_${data.chat_id}`).emit("new_message", {
       chat_id: data.chat_id,
       sender_id: data.sender_id,
@@ -632,6 +647,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    console.log(`❌ Client disconnected: ${socket.id}`);
     typingUsers.forEach((users) => {
       users.delete(socket.id as any);
     });
