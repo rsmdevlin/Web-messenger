@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import Composer from "./Composer";
+import Skeleton from "../common/Skeleton";
 import "./ChatWindow.css";
 
 interface Chat {
@@ -37,6 +38,7 @@ interface Props {
   onTyping: (isTyping: boolean) => void;
   typingUsers: string[];
   messagesEndRef: React.RefObject<HTMLDivElement>;
+  isLoadingMessages?: boolean;
 }
 
 export default function ChatWindow({
@@ -47,6 +49,7 @@ export default function ChatWindow({
   onTyping,
   typingUsers,
   messagesEndRef,
+  isLoadingMessages = false,
 }: Props) {
   const composerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -96,7 +99,11 @@ export default function ChatWindow({
       </div>
 
       <div className="messages-container">
-        {messages.length === 0 ? (
+        {isLoadingMessages ? (
+          <div className="messages-skeleton">
+            <Skeleton type="message" height="40px" count={5} />
+          </div>
+        ) : messages.length === 0 ? (
           <div className="empty-state">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
               <circle

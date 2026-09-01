@@ -1,0 +1,44 @@
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-hover) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 2s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-message {
+  border-radius: 18px;
+  margin-bottom: 12px;
+}
+
+.skeleton-chat {
+  height: 64px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+}
+
+.skeleton-avatar {
+  border-radius: 50%;
+}
+
+.skeleton-text {
+  border-radius: 4px;
+}
+
+.skeleton-button {
+  border-radius: var(--radius-md);
+  min-height: 40px;
+}

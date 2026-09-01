@@ -55,6 +55,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [sidebarVisible, setSidebarVisible] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
@@ -162,6 +163,7 @@ export default function App() {
     if (!selectedChat || !isAuthenticated) return;
 
     const loadMessages = async () => {
+      setLoadingMessages(true);
       try {
         const response = await api.get(`/messages/${selectedChat.id}`);
         if (response.data && Array.isArray(response.data)) {
@@ -175,6 +177,8 @@ export default function App() {
       } catch (err) {
         console.error("Failed to load messages:", err);
         setMessages([]);
+      } finally {
+        setLoadingMessages(false);
       }
     };
 
@@ -334,6 +338,7 @@ export default function App() {
               onTyping={handleTyping}
               typingUsers={typingUsers}
               messagesEndRef={messagesEndRef}
+              isLoadingMessages={loadingMessages}
             />
           </>
         ) : (
