@@ -5,6 +5,7 @@ import AuthScreen from "./components/auth/AuthScreen";
 import ChatSidebar from "./components/chat/ChatSidebar";
 import ChatWindow from "./components/chat/ChatWindow";
 import Settings from "./components/settings/Settings";
+import { useSwipe } from "./hooks/useSwipe";
 import "./App.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
@@ -64,6 +65,17 @@ export default function App() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesLoadedRef = useRef<boolean>(false);
+  const swipeHandlers = useSwipe({
+    onSwipeRight: () => {
+      if (selectedChat) {
+        setSelectedChat(null);
+        setSearchQuery("");
+      }
+    },
+    onSwipeLeft: () => {
+      // Reserved for future navigation
+    },
+  });
 
   // DETECT MOBILE/DESKTOP ON RESIZE
   useEffect(() => {
@@ -339,7 +351,11 @@ export default function App() {
             </div>
           ) : (
             /* Mobile: Chat Window */
-            <div className="app-mobile-chat">
+            <div
+              className="app-mobile-chat"
+              onTouchStart={swipeHandlers.handleTouchStart}
+              onTouchEnd={swipeHandlers.handleTouchEnd}
+            >
               <button
                 className="mobile-back-btn"
                 onClick={() => {

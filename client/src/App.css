@@ -50,8 +50,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 20;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .mobile-back-btn:hover {
