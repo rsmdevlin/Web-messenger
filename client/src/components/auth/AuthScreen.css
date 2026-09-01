@@ -5,36 +5,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-primary);
+  background: linear-gradient(135deg, #F8E6F3 0%, #E8D4F0 100%);
   overflow: hidden;
   position: relative;
 }
 
 .auth-screen::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(0, 255, 65, 0.02) 0px,
-      rgba(0, 255, 65, 0.02) 1px,
-      transparent 1px,
-      transparent 2px
-    );
-  pointer-events: none;
-  z-index: 0;
+  content: none;
 }
 
 .auth-screen::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(0, 255, 65, 0.06) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle at 50% 50%, rgba(212, 181, 224, 0.05) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -48,10 +32,10 @@
   position: relative;
   z-index: 1;
   animation: containerEnter 0.6s var(--easing-bounce) forwards;
-  border: 2px solid var(--color-border-primary);
-  background: linear-gradient(135deg, rgba(0, 255, 65, 0.03), rgba(0, 255, 65, 0.01));
+  border: 2px solid #E8CCDD;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 230, 243, 0.8) 100%);
   border-radius: var(--radius-md);
-  box-shadow: 0 0 24px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.05);
+  box-shadow: 0 0 24px rgba(212, 181, 224, 0.2), inset 0 0 20px rgba(212, 181, 224, 0.05);
 }
 
 .auth-header {
@@ -64,14 +48,14 @@
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
   margin: 0;
-  color: var(--color-accent-primary);
-  text-shadow: 0 0 20px rgba(0, 255, 65, 0.6), 0 0 40px rgba(0, 255, 65, 0.3);
+  color: #5B5BFF;
+  text-shadow: 0 0 20px rgba(91, 91, 255, 0.3), 0 0 40px rgba(91, 91, 255, 0.15);
   letter-spacing: 2px;
 }
 
 .auth-header p {
   font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
+  color: #999999;
   margin: var(--space-2) 0 0 0;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.5px;
@@ -92,58 +76,45 @@
   animation: inputGroupEnter 0.4s ease-out backwards;
 }
 
-.input-group:nth-child(1) {
-  animation-delay: 0.25s;
-}
-
-.input-group:nth-child(2) {
-  animation-delay: 0.3s;
-}
-
-.input-group:nth-child(3) {
-  animation-delay: 0.35s;
-}
+.input-group:nth-child(1) { animation-delay: 0.25s; }
+.input-group:nth-child(2) { animation-delay: 0.3s; }
+.input-group:nth-child(3) { animation-delay: 0.35s; }
 
 .input-label {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
+  color: #999999;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0 var(--space-2);
   font-family: var(--font-family-display);
-  text-shadow: 0 0 6px rgba(0, 255, 65, 0.2);
+  text-shadow: 0 0 6px rgba(212, 181, 224, 0.1);
 }
 
 .input-wrapper {
   position: relative;
-  border: 2px solid var(--color-border-secondary);
+  border: 2px solid #E8CCDD;
   border-radius: var(--radius-md);
-  background: rgba(0, 255, 65, 0.03);
+  background: rgba(255, 255, 255, 0.9);
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   overflow: hidden;
-  box-shadow: 0 0 8px rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 8px rgba(212, 181, 224, 0.1);
 }
 
 .input-wrapper::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 255, 65, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(212, 181, 224, 0.08), transparent);
   opacity: 0;
   transition: opacity var(--duration-normal) var(--easing-ease-in-out);
   pointer-events: none;
 }
 
 .input-wrapper.focused {
-  border-color: var(--color-accent-primary);
-  background: rgba(0, 255, 65, 0.06);
-  box-shadow: 0 0 16px rgba(0, 255, 65, 0.3), inset 0 0 12px rgba(0, 255, 65, 0.08);
+  border-color: #D4B5E0;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 0 16px rgba(212, 181, 224, 0.2), inset 0 0 12px rgba(212, 181, 224, 0.05);
 }
 
 .input-wrapper.focused::before {
@@ -152,11 +123,11 @@
 
 .input-wrapper.error {
   border-color: rgba(255, 0, 64, 0.6);
-  box-shadow: 0 0 12px rgba(255, 0, 64, 0.3);
+  box-shadow: 0 0 12px rgba(255, 0, 64, 0.2);
 }
 
 .input-wrapper.filled {
-  background: rgba(0, 255, 65, 0.05);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .input-wrapper input {
@@ -164,8 +135,8 @@
   padding: var(--space-3) var(--space-4);
   border: none;
   background: transparent;
-  color: var(--color-text-primary);
-  font-family: var(--font-family-body);
+  color: #1A1A1A;
+  font-family: var(--font-family-display);
   font-size: var(--font-size-base);
   outline: none;
   position: relative;
@@ -174,7 +145,7 @@
 }
 
 .input-wrapper input::placeholder {
-  color: var(--color-text-muted);
+  color: #CCCCCC;
 }
 
 .input-wrapper input:disabled {
@@ -192,7 +163,7 @@
   right: var(--space-3);
   background: none;
   border: none;
-  color: var(--color-text-tertiary);
+  color: #CCCCCC;
   cursor: pointer;
   padding: var(--space-2);
   display: flex;
@@ -203,9 +174,9 @@
 }
 
 .password-toggle:hover:not(:disabled) {
-  color: var(--color-accent-primary);
+  color: #D4B5E0;
   transform: scale(1.15);
-  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+  text-shadow: 0 0 8px rgba(212, 181, 224, 0.3);
 }
 
 .password-toggle:active:not(:disabled) {
@@ -225,7 +196,7 @@
   align-items: center;
   gap: var(--space-1);
   font-family: var(--font-family-display);
-  text-shadow: 0 0 4px rgba(255, 0, 64, 0.3);
+  text-shadow: 0 0 4px rgba(255, 0, 64, 0.2);
 }
 
 .auth-error {
@@ -240,7 +211,7 @@
   gap: var(--space-2);
   animation: errorShake 0.4s var(--easing-bounce);
   font-family: var(--font-family-display);
-  box-shadow: 0 0 12px rgba(255, 0, 64, 0.2);
+  box-shadow: 0 0 12px rgba(255, 0, 64, 0.15);
 }
 
 .auth-error svg {
@@ -249,10 +220,10 @@
 
 .auth-button {
   padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-accent-primary);
+  border: 2px solid #5B5BFF;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--color-accent-primary);
+  color: #5B5BFF;
   font-family: var(--font-family-display);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
@@ -265,7 +236,7 @@
   position: relative;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   animation: buttonEnter 0.5s var(--easing-bounce) 0.4s backwards;
-  box-shadow: 0 0 12px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 12px rgba(91, 91, 255, 0.2);
   letter-spacing: 1px;
 }
 
@@ -273,12 +244,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 255, 65, 0.15),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(91, 91, 255, 0.1), transparent);
   opacity: 0;
   transition: opacity var(--duration-normal) var(--easing-ease-in-out);
   pointer-events: none;
@@ -286,9 +252,9 @@
 
 .auth-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 0 24px rgba(0, 255, 65, 0.5);
-  background: rgba(0, 255, 65, 0.1);
-  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+  box-shadow: 0 0 24px rgba(91, 91, 255, 0.35);
+  background: rgba(91, 91, 255, 0.1);
+  text-shadow: 0 0 8px rgba(91, 91, 255, 0.3);
 }
 
 .auth-button:hover:not(:disabled)::before {
@@ -297,7 +263,7 @@
 
 .auth-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 0 16px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 16px rgba(91, 91, 255, 0.25);
 }
 
 .auth-button:disabled {
@@ -309,35 +275,35 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 255, 65, 0.3);
-  border-top-color: var(--color-accent-primary);
+  border: 2px solid rgba(91, 91, 255, 0.2);
+  border-top-color: #5B5BFF;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  box-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+  box-shadow: 0 0 8px rgba(91, 91, 255, 0.3);
 }
 
 .auth-toggle {
   padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-border-primary);
+  border: 2px solid #E8CCDD;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--color-text-tertiary);
+  color: #CCCCCC;
   font-family: var(--font-family-display);
   font-size: var(--font-size-sm);
   cursor: pointer;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   animation: toggleEnter 0.5s ease-out 0.5s backwards;
-  box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+  box-shadow: 0 0 8px rgba(212, 181, 224, 0.15);
   letter-spacing: 0.5px;
 }
 
 .auth-toggle:hover:not(:disabled) {
-  border-color: var(--color-accent-primary);
-  color: var(--color-accent-primary);
-  background: rgba(0, 255, 65, 0.1);
+  border-color: #D4B5E0;
+  color: #D4B5E0;
+  background: rgba(212, 181, 224, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(0, 255, 65, 0.3);
-  text-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 16px rgba(212, 181, 224, 0.25);
+  text-shadow: 0 0 6px rgba(212, 181, 224, 0.2);
 }
 
 .auth-toggle:active:not(:disabled) {
@@ -378,7 +344,7 @@
     padding: var(--space-4) var(--space-3);
     gap: var(--space-5);
     margin: var(--space-3);
-    border: 1px solid var(--color-border-primary);
+    border: 1px solid #E8CCDD;
   }
 
   .auth-header h1 {
@@ -411,94 +377,51 @@
 
 /* ========== ANIMATIONS ========== */
 @keyframes containerEnter {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes headerEnter {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes formEnter {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes inputGroupEnter {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes buttonEnter {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(12px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes toggleEnter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes errorShake {
-  0% {
-    transform: translateX(-4px);
-  }
-  25% {
-    transform: translateX(4px);
-  }
-  50% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
-  }
-  100% {
-    transform: translateX(0);
-  }
+  0% { transform: translateX(-4px); }
+  25% { transform: translateX(4px); }
+  50% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

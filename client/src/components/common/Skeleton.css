@@ -1,9 +1,9 @@
-﻿.skeleton {
+.skeleton {
   background: linear-gradient(
     90deg,
-    var(--color-surface-primary) 0%,
-    var(--color-surface-secondary) 50%,
-    var(--color-surface-primary) 100%
+    rgba(212, 181, 224, 0.15) 0%,
+    rgba(212, 181, 224, 0.25) 50%,
+    rgba(212, 181, 224, 0.15) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
@@ -39,9 +39,9 @@
   border-radius: var(--radius-md);
   background: linear-gradient(
     90deg,
-    var(--color-surface-primary) 0%,
-    var(--color-surface-secondary) 50%,
-    var(--color-surface-primary) 100%
+    rgba(212, 181, 224, 0.15) 0%,
+    rgba(212, 181, 224, 0.25) 50%,
+    rgba(212, 181, 224, 0.15) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
@@ -55,9 +55,9 @@
   border-radius: var(--radius-sm);
   background: linear-gradient(
     90deg,
-    var(--color-surface-primary) 0%,
-    var(--color-surface-secondary) 50%,
-    var(--color-surface-primary) 100%
+    rgba(212, 181, 224, 0.15) 0%,
+    rgba(212, 181, 224, 0.25) 50%,
+    rgba(212, 181, 224, 0.15) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
@@ -65,16 +65,9 @@
 
 @keyframes shimmer {
   0% {
-    background-position: 200% 0;
-  }
-  100% {
     background-position: -200% 0;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton {
-    animation: none;
-    background: var(--color-surface-secondary);
+  100% {
+    background-position: 200% 0;
   }
 }

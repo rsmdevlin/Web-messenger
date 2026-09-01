@@ -1,0 +1,89 @@
+/* ========== DESIGN SYSTEM - SOFT GRADIENT THEME ========== */
+
+:root {
+  /* ========== PRIMARY COLORS ========== */
+  --color-bg-primary: #F8E6F3;
+  --color-bg-secondary: #E8D4F0;
+  --color-bg-tertiary: #F0E0EA;
+  --color-bg-header: #F0E0EA;
+  --color-bg-footer: #D4B5E0;
+
+  /* ========== MESSAGE COLORS ========== */
+  --color-msg-other: #E8CCDD;
+  --color-msg-self: #D4B5E0;
+
+  /* ========== ACCENT COLORS ========== */
+  --color-accent-primary: #D4B5E0;
+  --color-accent-secondary: #E8CCDD;
+  --color-accent-tertiary: #5B5BFF;
+
+  /* ========== TEXT COLORS ========== */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #999999;
+  --color-text-tertiary: #CCCCCC;
+
+  /* ========== STATUS COLORS ========== */
+  --color-status-online: #00CC44;
+  --color-status-offline: #999999;
+  --color-status-typing: #5B5BFF;
+
+  /* ========== BORDER & SHADOW ========== */
+  --color-border-primary: #E8CCDD;
+  --color-border-light: rgba(232, 204, 221, 0.3);
+
+  /* ========== SPACING ========== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-family-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-family-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+
+  /* ========== DURATIONS & EASING ========== */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  --easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ========== GRADIENT BACKGROUNDS ========== */
+.gradient-primary {
+  background: linear-gradient(135deg, #F8E6F3 0%, #E8D4F0 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(180deg, #F0E0EA 0%, #E8D4F0 100%);
+}
+
+/* ========== SMOOTH TRANSITIONS ========== */
+* {
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+button, input, textarea, select {
+  transition: all var(--duration-fast) ease;
+}

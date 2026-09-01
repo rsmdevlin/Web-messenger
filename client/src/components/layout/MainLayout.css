@@ -3,14 +3,14 @@
   width: 100%;
   height: 100%;
   height: 100dvh;
-  background: var(--bg);
+  background: linear-gradient(135deg, #F8E6F3 0%, #E8D4F0 100%);
   position: relative;
 }
 
 .layout-sidebar {
   width: 280px;
-  background: var(--surface);
-  border-right: 1px solid var(--border-muted);
+  background: linear-gradient(180deg, #F8E6F3 0%, #E8D4F0 100%);
+  border-right: 1px solid #E8CCDD;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -23,6 +23,7 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  background: linear-gradient(135deg, #F8E6F3 0%, #E8D4F0 100%);
 }
 
 /* Tablet */
@@ -66,7 +67,7 @@
   /* When viewing chat on mobile */
   .main-layout[data-view="chat"] .layout-sidebar {
     transform: translateX(-22%);
-    filter: brightness(0.6);
+    filter: brightness(0.8);
     pointer-events: none;
   }
 
@@ -95,6 +96,13 @@
 
   .main-layout[data-view="chat"] .layout-sidebar {
     transform: translateX(-100%);
-    filter: brightness(0);
+    filter: brightness(0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layout-sidebar,
+  .layout-main {
+    transition: none;
   }
 }

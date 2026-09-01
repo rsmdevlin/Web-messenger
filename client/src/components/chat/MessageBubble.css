@@ -19,17 +19,17 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: rgba(0, 255, 65, 0.1);
+  background: rgba(212, 181, 224, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent-primary);
+  color: #D4B5E0;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   flex-shrink: 0;
   overflow: hidden;
-  border: 1px solid var(--color-border-primary);
-  box-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+  border: 1px solid #E8CCDD;
+  box-shadow: 0 0 8px rgba(212, 181, 224, 0.2);
   animation: avatarPop 0.4s var(--easing-bounce);
 }
 
@@ -57,11 +57,11 @@
 
 .message-username {
   font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  color: #999999;
   font-weight: var(--font-weight-medium);
   padding: 0 var(--space-3);
   animation: slideInLeft 0.3s var(--easing-ease-in-out) forwards;
-  text-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
+  text-shadow: 0 0 6px rgba(212, 181, 224, 0.1);
 }
 
 .message-bubble-container {
@@ -85,21 +85,21 @@
 }
 
 .message-group.own .message-bubble-svg .bubble-bg {
-  fill: rgba(0, 255, 65, 0.15);
+  fill: #D4B5E0;
   opacity: 0;
   animation: svgBubbleAppear 0.4s var(--easing-bounce) forwards;
-  stroke: var(--color-border-primary);
+  stroke: #C9A0D4;
   stroke-width: 1;
-  filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.4));
+  filter: drop-shadow(0 0 8px rgba(212, 181, 224, 0.3));
 }
 
 .message-group.other .message-bubble-svg .bubble-bg {
-  fill: rgba(0, 255, 65, 0.08);
+  fill: #E8CCDD;
   opacity: 0;
   animation: svgBubbleAppear 0.4s var(--easing-bounce) forwards;
-  stroke: var(--color-border-primary);
+  stroke: #E0BFCF;
   stroke-width: 1;
-  filter: drop-shadow(0 0 6px rgba(0, 255, 65, 0.3));
+  filter: drop-shadow(0 0 6px rgba(232, 204, 221, 0.25));
 }
 
 .message-bubble {
@@ -115,31 +115,32 @@
   z-index: 1;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   min-width: 60px;
+  border-radius: 20px;
 }
 
 .message-group.own .message-bubble {
-  color: var(--color-accent-primary);
-  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+  color: #FFFFFF;
+  text-shadow: none;
 }
 
 .message-group.other .message-bubble {
-  color: var(--color-accent-primary);
-  text-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
+  color: #1A1A1A;
+  text-shadow: none;
 }
 
 .message-bubble:hover {
   transform: translateY(-2px);
-  filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.5));
+  filter: drop-shadow(0 0 12px rgba(212, 181, 224, 0.3));
 }
 
 .message-group.own .message-bubble-container:hover .message-bubble-svg .bubble-bg {
-  opacity: 0.25;
-  filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.6));
+  opacity: 1;
+  filter: drop-shadow(0 0 12px rgba(212, 181, 224, 0.4));
 }
 
 .message-group.other .message-bubble-container:hover .message-bubble-svg .bubble-bg {
-  opacity: 0.15;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.5));
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(232, 204, 221, 0.3));
 }
 
 .message-text {
@@ -163,8 +164,12 @@
 .message-time {
   opacity: 1;
   animation: timeFadeIn 0.3s var(--easing-ease-in-out) 0.25s forwards;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.7);
   font-family: var(--font-family-display);
+}
+
+.message-group.other .message-time {
+  color: #999999;
 }
 
 .message-status {
@@ -172,14 +177,23 @@
   opacity: 1;
   animation: statusPulse 0.4s var(--easing-ease-in-out) 0.3s forwards;
   display: inline-flex;
-  color: var(--color-accent-primary);
-  filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.4));
+  color: rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 0 4px rgba(212, 181, 224, 0.3));
+}
+
+.message-group.other .message-status {
+  color: #999999;
 }
 
 .message-status.read {
   opacity: 1;
-  color: var(--color-accent-primary);
-  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-shadow: 0 0 6px rgba(212, 181, 224, 0.4);
+}
+
+.message-group.other .message-status.read {
+  color: #1A1A1A;
+  text-shadow: none;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -232,9 +246,9 @@
   width: 100%;
   max-width: 300px;
   max-height: 400px;
-  border-radius: 8px;
-  background: rgba(0, 255, 65, 0.05);
-  border: 1px solid rgba(0, 255, 65, 0.2);
+  border-radius: 12px;
+  background: rgba(212, 181, 224, 0.1);
+  border: 1px solid rgba(212, 181, 224, 0.2);
   object-fit: cover;
 }
 
@@ -246,14 +260,22 @@
 }
 
 .media-filename {
-  color: var(--color-text-primary);
+  color: #1A1A1A;
   font-weight: 600;
   word-break: break-word;
 }
 
+.message-group.own .media-filename {
+  color: #FFFFFF;
+}
+
 .media-size {
-  color: rgba(0, 255, 65, 0.6);
+  color: rgba(212, 181, 224, 0.6);
   font-family: 'Courier New', monospace;
+}
+
+.message-group.own .media-size {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ========== ANIMATIONS ========== */
@@ -302,15 +324,15 @@
 @keyframes svgBubbleAppear {
   0% {
     opacity: 0;
-    filter: drop-shadow(0 0 0 rgba(0, 255, 65, 0));
+    filter: drop-shadow(0 0 0 rgba(212, 181, 224, 0));
   }
   60% {
-    opacity: 0.5;
-    filter: drop-shadow(0 4px 12px rgba(0, 255, 65, 0.3));
+    opacity: 0.8;
+    filter: drop-shadow(0 4px 12px rgba(212, 181, 224, 0.2));
   }
   100% {
-    opacity: 0.8;
-    filter: drop-shadow(0 4px 16px rgba(0, 255, 65, 0.5));
+    opacity: 1;
+    filter: drop-shadow(0 4px 16px rgba(212, 181, 224, 0.3));
   }
 }
 
@@ -374,8 +396,8 @@
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background: rgba(0, 255, 65, 0.1);
-  border: 1px solid rgba(0, 255, 65, 0.3);
+  background: rgba(212, 181, 224, 0.15);
+  border: 1px solid rgba(212, 181, 224, 0.3);
   border-radius: var(--radius-sm);
   font-size: 14px;
   cursor: pointer;
@@ -384,10 +406,10 @@
 }
 
 .reaction-bubble:hover {
-  background: rgba(0, 255, 65, 0.2);
-  border-color: rgba(0, 255, 65, 0.5);
+  background: rgba(212, 181, 224, 0.25);
+  border-color: rgba(212, 181, 224, 0.5);
   transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 8px rgba(212, 181, 224, 0.25);
 }
 
 .reaction-emoji {
@@ -397,7 +419,7 @@
 
 .reaction-count {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: #999999;
   font-weight: var(--font-weight-medium);
 }
 
@@ -409,5 +431,15 @@
   to {
     opacity: 1;
     transform: scale(1) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-group,
+  .message-avatar,
+  .message-bubble,
+  .reaction-bubble {
+    animation: none;
+    transition: none;
   }
 }
