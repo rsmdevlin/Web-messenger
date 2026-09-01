@@ -5,6 +5,7 @@ import AuthScreen from "./components/auth/AuthScreen";
 import ChatSidebar from "./components/chat/ChatSidebar";
 import ChatWindow from "./components/chat/ChatWindow";
 import Settings from "./components/settings/Settings";
+import UserProfile from "./components/profile/UserProfile";
 import { useSwipe } from "./hooks/useSwipe";
 import "./App.css";
 
@@ -64,6 +65,8 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
   const [targetUserLastSeen, setTargetUserLastSeen] = useState<string>("");
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);

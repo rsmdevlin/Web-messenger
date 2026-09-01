@@ -327,6 +327,32 @@ app.put("/api/user/privacy", authMiddleware, async (req: Request, res: Response)
   }
 });
 
+app.get("/api/user/:userId", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const userIdNum = parseInt(userId);
+
+    const conn = await pool.getConnection();
+    try {
+      const [userRows]: any = await conn.execute(
+        "SELECT id, username, display_name, avatar, email FROM users WHERE id = ?",
+        [userIdNum]
+      );
+
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json(userRows[0]);
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Get user error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.put("/api/user/username", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { username } = req.body;
