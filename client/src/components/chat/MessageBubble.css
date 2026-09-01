@@ -132,7 +132,7 @@
   line-height: 1.5;
   margin: 0;
   animation: textFadeIn 0.4s var(--easing-ease-in-out) 0.15s forwards;
-  opacity: 0;
+  opacity: 1;
 }
 
 .message-footer {
@@ -144,13 +144,13 @@
 }
 
 .message-time {
-  opacity: 0;
+  opacity: 1;
   animation: timeFadeIn 0.3s var(--easing-ease-in-out) 0.25s forwards;
 }
 
 .message-status {
   flex-shrink: 0;
-  opacity: 0;
+  opacity: 1;
   animation: statusPulse 0.4s var(--easing-ease-in-out) 0.3s forwards;
   display: inline-flex;
 }

@@ -119,6 +119,7 @@ export default function App() {
     });
 
     newSocket.on("new_message", (data: Message) => {
+      console.log("📨 New message received:", data);
       if (!data?.id) return;
 
       setMessages((prev) => {
@@ -182,6 +183,7 @@ export default function App() {
           messagesLoadedRef.current = true;
 
           if (socketRef.current) {
+            console.log("🔌 Joining chat room:", selectedChat.id);
             socketRef.current.emit("join_chat", { chat_id: selectedChat.id });
           }
         }
@@ -207,12 +209,14 @@ export default function App() {
     if (!selectedChat || !user || !content.trim()) return;
 
     try {
+      console.log("📤 Sending message to chat:", selectedChat.id);
       const response = await api.post("/messages", {
         chat_id: selectedChat.id,
         content: content.trim(),
       });
 
       if (response.data) {
+        console.log("✅ Message sent successfully:", response.data);
         setMessages((prev) => [...prev, response.data]);
       }
 

@@ -212,8 +212,8 @@
   cursor: pointer;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   position: relative;
-  animation: slideInLeft 0.3s var(--easing-ease-in-out) forwards;
-  opacity: 0;
+  animation: slideInLeft 0.3s var(--easing-ease-in-out);
+  opacity: 1;
 }
 
 .chat-row:hover {
