@@ -209,7 +209,8 @@ export default function App() {
         const response = await api.get(`/messages/${selectedChat.id}`);
         if (response.data && Array.isArray(response.data)) {
           console.log(`✅ Loaded ${response.data.length} messages`);
-          setMessages(response.data);
+          const uniqueMessages = Array.from(new Map(response.data.map(m => [m.id, m])).values());
+          setMessages(uniqueMessages);
           messagesLoadedRef.current = true;
 
           if (socketRef.current) {
@@ -256,7 +257,7 @@ export default function App() {
       if (response.data) {
         console.log("✅ Message sent successfully:", response.data);
         console.log("✅ Message ID:", response.data.id, "Sender ID:", response.data.sender_id);
-        setMessages((prev) => [...prev, response.data]);
+        // Don't add message here - wait for Socket.IO broadcast to avoid duplicates
       }
 
       if (socketRef.current) {
