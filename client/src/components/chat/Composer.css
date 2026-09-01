@@ -6,7 +6,7 @@
   border-top: 1px solid var(--border-muted);
   background: var(--bg);
   flex-shrink: 0;
-  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .composer-btn {
@@ -21,14 +21,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
 .composer-btn:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(91, 141, 255, 0.05);
+  background: rgba(91, 141, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.composer-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .composer-btn:disabled {
@@ -49,18 +54,23 @@
   outline: none;
   resize: none;
   line-height: 1.4;
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow-y: auto;
 }
 
 .composer-input:focus {
   border-color: var(--accent);
   background: var(--surface-hover);
-  box-shadow: 0 0 0 3px rgba(91, 141, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(91, 141, 255, 0.15), inset 0 0 12px rgba(91, 141, 255, 0.08);
+  transform: scale(1.02);
 }
 
 .composer-input::placeholder {
   color: var(--text-dim);
+}
+
+.composer-send {
+  border: 1.5px solid var(--border-muted);
 }
 
 .composer-send.active {
@@ -71,10 +81,12 @@
 .composer-send.active:hover {
   background: rgba(91, 141, 255, 0.1);
   box-shadow: 0 0 0 8px rgba(91, 141, 255, 0.05);
+  transform: scale(1.15);
 }
 
 .composer-send.active:active {
   transform: scale(0.95);
+  animation: messageSend 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (max-width: 480px) {
@@ -91,5 +103,28 @@
     width: 32px;
     height: 32px;
     min-width: 32px;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes messageSend {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
   }
 }

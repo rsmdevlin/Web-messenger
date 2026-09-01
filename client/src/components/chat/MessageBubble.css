@@ -1,8 +1,8 @@
 .message-group {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
-  animation: messageSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-bottom: 12px;
+  animation: messageSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .message-group.own {
@@ -26,7 +26,8 @@
   font-weight: 600;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(91, 141, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(91, 141, 255, 0.25);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .message-avatar img {
@@ -56,61 +57,67 @@
   color: var(--text-muted);
   font-weight: 500;
   padding: 0 12px;
+  animation: slideInLeft 0.3s ease;
 }
 
 .message-bubble {
-  padding: 10px 13px;
-  border-radius: 18px;
+  padding: 12px 16px;
+  border-radius: 16px;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(12px);
 }
 
 .message-group.own .message-bubble {
-  background: linear-gradient(135deg, rgba(91, 141, 255, 0.2), rgba(91, 141, 255, 0.1));
-  border: 1px solid rgba(91, 141, 255, 0.3);
-  box-shadow: 0 2px 8px rgba(91, 141, 255, 0.1);
+  background: linear-gradient(135deg, rgba(91, 141, 255, 0.25), rgba(91, 141, 255, 0.12));
+  border: 1.5px solid rgba(91, 141, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(91, 141, 255, 0.12);
 }
 
 .message-group.other .message-bubble {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .message-bubble:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(91, 141, 255, 0.2);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(91, 141, 255, 0.2);
 }
 
 .message-group.own .message-bubble:hover {
-  background: linear-gradient(135deg, rgba(91, 141, 255, 0.25), rgba(91, 141, 255, 0.15));
+  background: linear-gradient(135deg, rgba(91, 141, 255, 0.32), rgba(91, 141, 255, 0.18));
+  border-color: rgba(91, 141, 255, 0.5);
 }
 
 .message-group.other .message-bubble:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .message-text {
   font-size: 15px;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--text);
   margin: 0;
+  animation: slideInUp 0.4s ease 0.1s backwards;
 }
 
 .message-time {
   font-size: 11px;
   color: var(--text-dim);
   display: inline-block;
+  animation: fadeIn 0.3s ease 0.2s backwards;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .message-wrap {
     max-width: 80%;
@@ -118,6 +125,11 @@
 
   .message-text {
     font-size: 14px;
+  }
+
+  .message-bubble {
+    padding: 10px 14px;
+    border-radius: 14px;
   }
 }
 
@@ -127,7 +139,8 @@
   }
 
   .message-bubble {
-    padding: 8px 11px;
+    padding: 8px 12px;
+    border-radius: 12px;
   }
 
   .message-text {
@@ -137,18 +150,70 @@
   .message-time {
     font-size: 10px;
   }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
 }
 
+/* Animations */
 @keyframes messageSlideIn {
   0% {
     opacity: 0;
-    transform: translateY(12px) scale(0.95);
+    transform: translateY(16px) scale(0.92);
   }
-  60% {
-    transform: translateY(-2px) scale(1.02);
+  50% {
+    transform: translateY(-2px) scale(1.04);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

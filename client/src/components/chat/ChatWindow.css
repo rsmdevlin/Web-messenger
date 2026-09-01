@@ -15,6 +15,7 @@
   border-bottom: 1px solid var(--border-muted);
   background: var(--bg);
   flex-shrink: 0;
+  animation: slideInDown 0.4s ease;
 }
 
 .header-back {
@@ -28,16 +29,18 @@
   justify-content: center;
   color: var(--text);
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 .header-back:hover {
   background: var(--surface);
+  transform: translateX(-2px);
 }
 
 .header-avatar {
   position: relative;
   flex-shrink: 0;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .avatar-circle {
@@ -54,6 +57,13 @@
   overflow: hidden;
   flex-shrink: 0;
   border: 2px solid var(--border);
+  box-shadow: 0 4px 12px rgba(91, 141, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.avatar-circle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(91, 141, 255, 0.3);
 }
 
 .avatar-circle img {
@@ -73,11 +83,13 @@
   border: 2px solid var(--bg);
   border-radius: 50%;
   animation: onlinePulse 2s infinite;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
 
 .header-info {
   flex: 1;
   min-width: 0;
+  animation: slideInUp 0.4s ease 0.1s backwards;
 }
 
 .header-name {
@@ -92,31 +104,35 @@
   font-size: var(--text-xs);
   color: var(--accent);
   margin: 2px 0 0 0;
+  animation: fadeIn 0.4s ease 0.2s backwards;
 }
 
 .header-actions {
   display: flex;
   gap: var(--space-2);
   flex-shrink: 0;
+  animation: slideInRight 0.4s ease 0.1s backwards;
 }
 
 .header-btn {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-md);
-  border: none;
+  border: 1px solid var(--border-muted);
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 .header-btn:hover {
   background: var(--surface);
-  color: var(--text);
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.05);
 }
 
 .messages-container {
@@ -126,12 +142,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  animation: fadeIn 0.4s ease;
 }
 
 .messages-skeleton {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  animation: fadeIn 0.3s ease;
 }
 
 .empty-state {
@@ -141,19 +159,26 @@
   align-items: center;
   justify-content: center;
   color: var(--text-dim);
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.5s ease;
 }
 
 .empty-state p {
   font-size: var(--text-lg);
   color: var(--text-muted);
   margin: 0;
+  animation: slideInUp 0.4s ease 0.1s backwards;
 }
 
 .empty-state span {
   font-size: var(--text-sm);
   color: var(--text-dim);
   margin-top: var(--space-2);
+  animation: slideInUp 0.4s ease 0.2s backwards;
+}
+
+.empty-state svg {
+  animation: float 3s ease-in-out infinite;
+  margin-bottom: var(--space-3);
 }
 
 .typing-indicator {
@@ -162,6 +187,7 @@
   gap: var(--space-3);
   padding: var(--space-2) 0;
   margin-left: var(--space-2);
+  animation: slideInUp 0.3s ease;
 }
 
 .typing-bubble {
@@ -171,6 +197,7 @@
   background: var(--surface);
   border-radius: 18px;
   animation: slideInUp 0.3s ease;
+  border: 1px solid var(--border-muted);
 }
 
 .typing-dot {
@@ -274,5 +301,93 @@
 
   .header-actions {
     gap: 0;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes onlinePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-8px);
   }
 }
