@@ -180,31 +180,38 @@
 }
 
 /* ========== RESPONSIVE ========== */
-@media (max-width: 768px) {
+@media (max-width: 319px) {
   .composer {
-    padding: var(--space-3) var(--space-4);
-    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2);
+    padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
+    gap: var(--space-1);
   }
 
   .composer-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 12px;
   }
 
-  .composer-textarea {
-    font-size: var(--font-size-xs);
-    padding: var(--space-2) var(--space-3);
+  .composer-input-wrapper {
+    min-height: 32px;
   }
 
-  .send-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+  .composer-input {
+    font-size: 12px;
+    padding: var(--space-1) var(--space-2);
+    max-height: 80px;
+  }
+
+  .composer-send {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
   }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 320px) and (max-width: 479px) {
   .composer {
     padding: var(--space-2) var(--space-3);
     padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
@@ -215,18 +222,83 @@
     width: 30px;
     height: 30px;
     min-width: 30px;
+    font-size: 13px;
   }
 
-  .composer-textarea {
-    font-size: var(--font-size-xs);
+  .composer-input-wrapper {
+    min-height: 36px;
+  }
+
+  .composer-input {
+    font-size: 13px;
+    padding: var(--space-2) var(--space-2);
+    max-height: 90px;
+  }
+
+  .composer-send {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .composer {
+    padding: var(--space-3) var(--space-3);
+    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    gap: var(--space-2);
+  }
+
+  .composer-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .composer-input {
+    font-size: var(--font-size-sm);
     padding: var(--space-2) var(--space-3);
     max-height: 100px;
   }
 
-  .send-btn {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
+  .composer-send {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .composer {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .composer-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .composer-input {
+    font-size: var(--font-size-sm);
+    max-height: 110px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .composer {
+    padding: var(--space-4) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .composer-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .composer-input {
+    font-size: var(--font-size-base);
+    max-height: 120px;
   }
 }
 
