@@ -62,6 +62,8 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
+  const [targetUserLastSeen, setTargetUserLastSeen] = useState<string>("");
 
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -180,6 +182,19 @@ export default function App() {
         }
         console.log("✅ Adding new chat to list:", data.id);
         return [data, ...prev];
+      });
+    });
+
+    newSocket.on("user_online_status", (data: { userId: number; isOnline: boolean }) => {
+      console.log(`👤 User ${data.userId} online status: ${data.isOnline ? "🟢 ONLINE" : "🔴 OFFLINE"}`);
+      setOnlineUsers((prev) => {
+        const newSet = new Set(prev);
+        if (data.isOnline) {
+          newSet.add(data.userId);
+        } else {
+          newSet.delete(data.userId);
+        }
+        return newSet;
       });
     });
 

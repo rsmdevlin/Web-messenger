@@ -88,6 +88,7 @@ async function initializeDatabase() {
 
 const sessions = new Map<string, Session>();
 const typingUsers = new Map<string, Set<number>>();
+const onlineUsers = new Map<number, { socketId: string; connectedAt: Date }>();
 
 const authMiddleware = (req: Request, res: Response, next: Function) => {
   const sessionId = req.cookies.sessionId;
@@ -260,6 +261,71 @@ app.post("/api/auth/logout", (req: Request, res: Response) => {
 });
 
 // ======================== USER ENDPOINTS ========================
+
+app.get("/api/user/online-status/:userId", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const userIdNum = parseInt(userId);
+
+    const conn = await pool.getConnection();
+    try {
+      const [userRows]: any = await conn.execute(
+        "SELECT id, last_seen, show_online_status FROM users WHERE id = ?",
+        [userIdNum]
+      );
+
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const user = userRows[0];
+      const isOnline = onlineUsers.has(userIdNum);
+
+      // Respect privacy settings
+      if (!user.show_online_status && !isOnline) {
+        return res.json({
+          userId: userIdNum,
+          isOnline: false,
+          lastSeen: "hidden",
+          status: "was recently",
+        });
+      }
+
+      res.json({
+        userId: userIdNum,
+        isOnline,
+        lastSeen: user.last_seen,
+        status: isOnline ? "online" : "offline",
+      });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Online status error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.put("/api/user/privacy", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { show_online_status } = req.body;
+    const session = (req as any).session;
+
+    const conn = await pool.getConnection();
+    try {
+      await conn.execute(
+        "UPDATE users SET show_online_status = ? WHERE id = ?",
+        [show_online_status ? 1 : 0, session.userId]
+      );
+      res.json({ success: true, show_online_status });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Privacy update error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 app.put("/api/user/username", authMiddleware, async (req: Request, res: Response) => {
   try {
@@ -668,7 +734,7 @@ app.post("/api/messages/:messageId/reaction", authMiddleware, async (req: Reques
 
 // ======================== SOCKET.IO EVENTS ========================
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
 
   // Get user ID from session
@@ -677,11 +743,39 @@ io.on("connection", (socket) => {
     .find(c => c.startsWith("sessionId="))
     ?.split("=")[1];
 
+  let userId: number | null = null;
   if (sessionId && sessions.has(sessionId)) {
     const session = sessions.get(sessionId);
     if (session) {
-      socket.join(`user_${session.userId}`);
-      console.log(`✅ Socket ${socket.id} joined user room user_${session.userId}`);
+      userId = session.userId;
+      socket.join(`user_${userId}`);
+      console.log(`✅ Socket ${socket.id} joined user room user_${userId}`);
+
+      // Mark user as online
+      onlineUsers.set(userId, { socketId: socket.id, connectedAt: new Date() });
+      console.log(`🟢 User ${userId} marked as ONLINE`);
+
+      // Update last_seen in database
+      try {
+        const conn = await pool.getConnection();
+        try {
+          await conn.execute(
+            "UPDATE users SET last_seen = NOW() WHERE id = ?",
+            [userId]
+          );
+        } finally {
+          conn.release();
+        }
+      } catch (error) {
+        console.error("Error updating last_seen:", error);
+      }
+
+      // Broadcast online status change to all connected clients
+      io.emit("user_online_status", {
+        userId,
+        isOnline: true,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 
@@ -740,11 +834,39 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log(`❌ Client disconnected: ${socket.id}`);
     typingUsers.forEach((users) => {
       users.delete(socket.id as any);
     });
+
+    // Mark user as offline
+    if (userId && onlineUsers.has(userId)) {
+      onlineUsers.delete(userId);
+      console.log(`🔴 User ${userId} marked as OFFLINE`);
+
+      // Update last_seen in database
+      try {
+        const conn = await pool.getConnection();
+        try {
+          await conn.execute(
+            "UPDATE users SET last_seen = NOW() WHERE id = ?",
+            [userId]
+          );
+        } finally {
+          conn.release();
+        }
+      } catch (error) {
+        console.error("Error updating last_seen on disconnect:", error);
+      }
+
+      // Broadcast offline status change
+      io.emit("user_online_status", {
+        userId,
+        isOnline: false,
+        timestamp: new Date().toISOString(),
+      });
+    }
   });
 });
 

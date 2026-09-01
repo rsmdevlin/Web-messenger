@@ -47,6 +47,8 @@ interface Props {
   isMobile?: boolean;
   socket?: any;
   onMessageRead?: (messageIds: number[]) => void;
+  onlineUsers?: Set<number>;
+  targetUserLastSeen?: string;
 }
 
 export default function ChatWindow({
@@ -62,11 +64,30 @@ export default function ChatWindow({
   isMobile = false,
   socket,
   onMessageRead,
+  onlineUsers = new Set(),
+  targetUserLastSeen,
 }: Props) {
   const composerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [readMessageIds, setReadMessageIds] = useState<Set<number>>(new Set());
+
+  // Get online status for direct chat
+  const isTargetUserOnline = chat.target_user_id ? onlineUsers.has(chat.target_user_id) : false;
+
+  const getStatusText = () => {
+    if (typingUsers.length > 0) {
+      return `${typingUsers.join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`;
+    }
+    if (isTargetUserOnline) {
+      return "online";
+    }
+    if (targetUserLastSeen) {
+      const lastSeen = new Date(targetUserLastSeen);
+      return lastSeen.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+    return "offline";
+  };
 
   // Track message visibility and send read receipts
   useEffect(() => {
@@ -144,9 +165,7 @@ export default function ChatWindow({
         <div className="header-info">
           <h2 className="header-name">{chat.chat_display_name || chat.name}</h2>
           <p className="header-status">
-            {typingUsers.length > 0
-              ? `${typingUsers.join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
-              : "online"}
+            {getStatusText()}
           </p>
         </div>
 

@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   theme VARCHAR(50) DEFAULT 'dark',
   message_style VARCHAR(50) DEFAULT 'rounded',
   background_photo LONGTEXT,
+  last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  show_online_status BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
