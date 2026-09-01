@@ -17,16 +17,17 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  background: rgba(0, 255, 65, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-accent-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(91, 141, 255, 0.2);
+  border: 1px solid var(--color-border-primary);
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
   animation: avatarPop 0.4s var(--easing-bounce);
 }
 
@@ -54,10 +55,11 @@
 
 .message-username {
   font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   font-weight: var(--font-weight-medium);
   padding: 0 var(--space-3);
   animation: slideInLeft 0.3s var(--easing-ease-in-out) forwards;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
 }
 
 .message-bubble-container {
@@ -81,15 +83,21 @@
 }
 
 .message-group.own .message-bubble-svg .bubble-bg {
-  fill: var(--color-accent-primary);
+  fill: rgba(0, 255, 65, 0.15);
   opacity: 0;
   animation: svgBubbleAppear 0.4s var(--easing-bounce) forwards;
+  stroke: var(--color-border-primary);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.4));
 }
 
 .message-group.other .message-bubble-svg .bubble-bg {
-  fill: var(--color-surface-secondary);
+  fill: rgba(0, 255, 65, 0.08);
   opacity: 0;
   animation: svgBubbleAppear 0.4s var(--easing-bounce) forwards;
+  stroke: var(--color-border-primary);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 65, 0.3));
 }
 
 .message-bubble {
@@ -108,23 +116,28 @@
 }
 
 .message-group.own .message-bubble {
-  color: white;
+  color: var(--color-accent-primary);
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
 }
 
 .message-group.other .message-bubble {
-  color: var(--color-text-primary);
+  color: var(--color-accent-primary);
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
 }
 
 .message-bubble:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
+  filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.5));
 }
 
 .message-group.own .message-bubble-container:hover .message-bubble-svg .bubble-bg {
-  opacity: 0.22;
+  opacity: 0.25;
+  filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.6));
 }
 
 .message-group.other .message-bubble-container:hover .message-bubble-svg .bubble-bg {
-  opacity: 0.9;
+  opacity: 0.15;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.5));
 }
 
 .message-text {
@@ -133,6 +146,8 @@
   margin: 0;
   animation: textFadeIn 0.4s var(--easing-ease-in-out) 0.15s forwards;
   opacity: 1;
+  font-family: var(--font-family-display);
+  letter-spacing: 0.5px;
 }
 
 .message-footer {
@@ -146,6 +161,8 @@
 .message-time {
   opacity: 1;
   animation: timeFadeIn 0.3s var(--easing-ease-in-out) 0.25s forwards;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-display);
 }
 
 .message-status {
@@ -153,11 +170,14 @@
   opacity: 1;
   animation: statusPulse 0.4s var(--easing-ease-in-out) 0.3s forwards;
   display: inline-flex;
+  color: var(--color-accent-primary);
+  filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.4));
 }
 
 .message-status.read {
   opacity: 1;
   color: var(--color-accent-primary);
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
 }
 
 /* ========== RESPONSIVE ========== */
@@ -203,7 +223,7 @@
 @keyframes messageSlideIn {
   0% {
     opacity: 0;
-    transform: translateY(20px) scale(0.9);
+    transform: translateY(12px) scale(0.9);
   }
   60% {
     transform: translateY(-2px) scale(1.02);
@@ -231,7 +251,7 @@
 @keyframes bubbleEnter {
   0% {
     opacity: 0;
-    transform: translateX(-20px) scale(0.9);
+    transform: translateX(-12px) scale(0.9);
   }
   60% {
     transform: translateX(2px) scale(1.01);
@@ -245,15 +265,15 @@
 @keyframes svgBubbleAppear {
   0% {
     opacity: 0;
-    filter: drop-shadow(0 0 0 rgba(91, 141, 255, 0));
+    filter: drop-shadow(0 0 0 rgba(0, 255, 65, 0));
   }
   60% {
     opacity: 0.5;
-    filter: drop-shadow(0 4px 12px rgba(91, 141, 255, 0.2));
+    filter: drop-shadow(0 4px 12px rgba(0, 255, 65, 0.3));
   }
   100% {
-    opacity: var(--bubble-opacity, 0.8);
-    filter: drop-shadow(0 4px 16px rgba(91, 141, 255, 0.15));
+    opacity: 0.8;
+    filter: drop-shadow(0 4px 16px rgba(0, 255, 65, 0.5));
   }
 }
 
