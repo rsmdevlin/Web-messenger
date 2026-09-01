@@ -34,28 +34,28 @@ export default function CreateChatModal({ isOpen, onClose, onCreate, loading }: 
       <div className="modal-overlay" onClick={onClose} />
       <div className="modal-container">
         <div className="modal-content">
-          <h2>Создать новый чат</h2>
-          <p>Введите имя чата</p>
+          <h2>New Chat</h2>
+          <p>Enter chat name</p>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Имя чата..."
+            placeholder="Chat name..."
             autoFocus
             disabled={loading}
             className="modal-input"
           />
           <div className="modal-buttons">
             <button onClick={onClose} className="modal-btn cancel" disabled={loading}>
-              Отмена
+              Cancel
             </button>
             <button
               onClick={handleCreate}
               className="modal-btn create"
               disabled={loading || !name.trim()}
             >
-              {loading ? "Создание..." : "Создать"}
+              {loading ? "Creating..." : "Create"}
             </button>
           </div>
         </div>
