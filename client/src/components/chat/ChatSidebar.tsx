@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import CreateChatModal from "./CreateChatModal";
 import "./ChatSidebar.css";
 import axios from "axios";
@@ -9,6 +9,10 @@ interface Chat {
   type: string;
   created_by: number;
   created_at: string;
+  target_user_id?: number;
+  last_message?: string;
+  last_message_time?: string;
+  unread_count?: number;
 }
 
 interface User {
@@ -61,6 +65,7 @@ export default function ChatSidebar({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [typingUsers, setTypingUsers] = useState<Map<number, string>>(new Map());
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const filteredChats = useMemo(() => {
@@ -110,54 +115,97 @@ export default function ChatSidebar({
     setShowCreateModal(false);
   };
 
+  const formatTime = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "now";
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+  const getAvatarInitials = (name: string) => {
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const truncateMessage = (text?: string, maxLength: number = 40) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  };
+
   return (
     <>
       <div className="chat-sidebar">
+        {/* Header */}
         <div className="sidebar-header">
-          <h1>Messages</h1>
+          <div className="sidebar-title">
+            <h1>Messages</h1>
+          </div>
           <button
             className="create-chat-btn"
             onClick={() => setShowCreateModal(true)}
-            title="Create chat"
+            title="New chat"
+            aria-label="Create new chat"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 2V16M2 9H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M9 2V16M2 9H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>
 
+        {/* Search */}
         <div className={`search-box ${isSearchFocused ? "focused" : ""}`}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M10 10L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M10 10L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <input
             type="text"
             className="search-input"
-            placeholder="Search or @username"
+            placeholder="Search chats or @username"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => {
               setTimeout(() => setIsSearchFocused(false), 200);
             }}
+            aria-label="Search chats"
           />
         </div>
 
-        {/* Search results dropdown */}
+        {/* Search Results */}
         {searchResults.length > 0 && (
-          <div className="search-results">
+          <div className="search-results" role="listbox">
             {searchResults.map((result) => (
               <div
                 key={result.id}
                 className="search-result-item"
                 onClick={() => handleSelectSearchResult(result)}
+                role="option"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSelectSearchResult(result);
+                }}
               >
                 <div className="result-avatar">
                   {result.avatar ? (
                     <img src={result.avatar} alt={result.username} />
                   ) : (
-                    result.username[0].toUpperCase()
+                    getAvatarInitials(result.displayName || result.username)
                   )}
                 </div>
                 <div className="result-info">
@@ -169,53 +217,94 @@ export default function ChatSidebar({
           </div>
         )}
 
-        <div className="chats-list">
+        {/* Chats List */}
+        <div className="chats-list" role="list">
           {filteredChats.length > 0 ? (
-            filteredChats.map((chat) => (
+            filteredChats.map((chat, index) => (
               <div
                 key={chat.id}
                 className={`chat-row ${selectedChat?.id === chat.id ? "active" : ""}`}
                 onClick={() => onSelectChat(chat)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") onSelectChat(chat);
+                }}
+                role="listitem"
+                tabIndex={0}
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
+                {/* Avatar */}
                 <div className="chat-avatar">
-                  <div className="avatar-letter">{chat.name[0].toUpperCase()}</div>
-                  <div className="online-dot" />
-                </div>
-                <div className="chat-body">
-                  <div className="chat-top">
-                    <span className="chat-name">{chat.name}</span>
-                    <span className="chat-time">
-                      {new Date(chat.created_at).toLocaleDateString()}
-                    </span>
+                  <div className="avatar-circle">
+                    {chat.avatar ? (
+                      <img src={chat.avatar} alt={chat.name} />
+                    ) : (
+                      getAvatarInitials(chat.name)
+                    )}
                   </div>
-                  <div className="chat-bottom">
-                    <span className="chat-preview">Click to open</span>
+                  <div className="online-indicator" />
+                </div>
+
+                {/* Chat Info */}
+                <div className="chat-body">
+                  {/* Top Row: Name + Time */}
+                  <div className="chat-header">
+                    <span className="chat-name">{chat.name}</span>
+                    <span className="chat-time">{formatTime(chat.last_message_time || chat.created_at)}</span>
+                  </div>
+
+                  {/* Bottom Row: Message Preview + Badge */}
+                  <div className="chat-footer">
+                    <span className="chat-preview">
+                      {typingUsers.has(chat.id) ? (
+                        <span className="typing-indicator">
+                          <span className="typing-dot" />
+                          <span className="typing-dot" />
+                          <span className="typing-dot" />
+                        </span>
+                      ) : (
+                        truncateMessage(chat.last_message || "No messages yet")
+                      )}
+                    </span>
+                    {(chat.unread_count || 0) > 0 && (
+                      <span className="unread-badge">{chat.unread_count}</span>
+                    )}
                   </div>
                 </div>
               </div>
             ))
           ) : (
             <div className="empty-state">
-              <p>No chats</p>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="2" opacity="0.2" />
+                <path
+                  d="M24 14C18.5 14 14 18.5 14 24C14 27.2 15.6 30 18 31.8L16 36L21 33C22 33.3 23 33.5 24 33.5C29.5 33.5 34 29 34 23.5C34 18 29.5 14 24 14Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  opacity="0.3"
+                />
+              </svg>
+              <p>No chats yet</p>
+              <span className="empty-hint">Start a conversation to get began</span>
               {!searchQuery && (
                 <button
-                  className="new-chat-btn"
+                  className="start-chat-btn"
                   onClick={() => setShowCreateModal(true)}
                 >
-                  Create chat
+                  New Chat
                 </button>
               )}
             </div>
           )}
         </div>
 
+        {/* Footer */}
         <div className="sidebar-footer">
           <div className="user-profile">
             <div className="user-avatar">
               {user.avatar ? (
-                <img src={user.avatar} alt="avatar" />
+                <img src={user.avatar} alt={user.username} />
               ) : (
-                user.username[0].toUpperCase()
+                getAvatarInitials(user.displayName || user.username)
               )}
             </div>
             <div className="user-info">
@@ -228,6 +317,7 @@ export default function ChatSidebar({
               className="footer-btn settings-btn"
               onClick={onOpenSettings}
               title="Settings"
+              aria-label="Settings"
             >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <circle cx="9" cy="3" r="1" fill="currentColor" />
@@ -235,7 +325,12 @@ export default function ChatSidebar({
                 <circle cx="9" cy="15" r="1" fill="currentColor" />
               </svg>
             </button>
-            <button className="footer-btn logout-btn" onClick={onLogout} title="Logout">
+            <button
+              className="footer-btn logout-btn"
+              onClick={onLogout}
+              title="Logout"
+              aria-label="Logout"
+            >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path
                   d="M7 2H4C3.44772 2 3 2.44772 3 3V15C3 15.5523 3.44772 16 4 16H7M11 6L15 9M15 9L11 12M15 9H6"
