@@ -559,7 +559,7 @@ app.get("/api/chats", authMiddleware, async (req: Request, res: Response) => {
 
 app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { name, targetUserId } = req.body;
+    const { name, targetUserId, participants, isGroup } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Chat name required" });
     }
@@ -567,7 +567,7 @@ app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
     const conn = await pool.getConnection();
     try {
       // For direct chats with a target user, check if chat already exists in either direction
-      if (targetUserId) {
+      if (targetUserId && !isGroup) {
         const [existing]: any = await conn.execute(
           `SELECT id, name FROM chats WHERE type = 'direct' AND (
             (created_by = ? AND target_user_id = ?) OR
@@ -582,14 +582,37 @@ app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
         }
       }
 
+      const chatType = isGroup ? "group" : "direct";
       const [result]: any = await conn.execute(
         "INSERT INTO chats (name, type, created_by, target_user_id, created_at) VALUES (?, ?, ?, ?, NOW())",
-        [name.trim(), "direct", session.userId, targetUserId || null]
+        [name.trim(), chatType, session.userId, targetUserId || null]
       );
+
+      const chatId = result.insertId;
+
+      // Add participants if group chat
+      if (isGroup && participants && Array.isArray(participants)) {
+        // Add creator as admin
+        await conn.execute(
+          "INSERT INTO participants (chat_id, user_id, role) VALUES (?, ?, ?)",
+          [chatId, session.userId, "admin"]
+        );
+
+        // Add other participants as members
+        for (const userId of participants) {
+          if (userId !== session.userId) {
+            await conn.execute(
+              "INSERT INTO participants (chat_id, user_id, role) VALUES (?, ?, ?)",
+              [chatId, userId, "member"]
+            );
+          }
+        }
+      }
+
       res.status(201).json({
-        id: result.insertId,
+        id: chatId,
         name: name.trim(),
-        type: "direct",
+        type: chatType,
         created_by: session.userId,
         target_user_id: targetUserId || null,
         created_at: new Date().toISOString(),
@@ -599,6 +622,103 @@ app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error("Create chat error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/api/chats/:chatId/participants", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { chatId } = req.params;
+    const conn = await pool.getConnection();
+    try {
+      const [participants]: any = await conn.execute(
+        `SELECT p.*, u.username, u.display_name, u.avatar FROM participants p
+         JOIN users u ON p.user_id = u.id
+         WHERE p.chat_id = ?
+         ORDER BY p.role DESC, p.joined_at ASC`,
+        [chatId]
+      );
+      res.json(participants);
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Get participants error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/api/chats/:chatId/participants", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { chatId } = req.params;
+    const { userId } = req.body;
+    const session = (req as any).session;
+
+    const conn = await pool.getConnection();
+    try {
+      // Check if user is admin
+      const [admin]: any = await conn.execute(
+        "SELECT role FROM participants WHERE chat_id = ? AND user_id = ?",
+        [chatId, session.userId]
+      );
+
+      if (!admin.length || admin[0].role !== "admin") {
+        return res.status(403).json({ error: "Only admins can add members" });
+      }
+
+      // Check if user already in group
+      const [exists]: any = await conn.execute(
+        "SELECT id FROM participants WHERE chat_id = ? AND user_id = ?",
+        [chatId, userId]
+      );
+
+      if (exists.length > 0) {
+        return res.status(409).json({ error: "User already in group" });
+      }
+
+      await conn.execute(
+        "INSERT INTO participants (chat_id, user_id, role) VALUES (?, ?, ?)",
+        [chatId, userId, "member"]
+      );
+
+      res.json({ success: true });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Add participant error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.delete("/api/chats/:chatId/participants/:userId", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { chatId, userId } = req.params;
+    const session = (req as any).session;
+
+    const conn = await pool.getConnection();
+    try {
+      // Check if user is admin or removing themselves
+      const [admin]: any = await conn.execute(
+        "SELECT role FROM participants WHERE chat_id = ? AND user_id = ?",
+        [chatId, session.userId]
+      );
+
+      if (!admin.length || (admin[0].role !== "admin" && parseInt(userId) !== session.userId)) {
+        return res.status(403).json({ error: "Permission denied" });
+      }
+
+      await conn.execute(
+        "DELETE FROM participants WHERE chat_id = ? AND user_id = ?",
+        [chatId, userId]
+      );
+
+      res.json({ success: true });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error("Remove participant error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });

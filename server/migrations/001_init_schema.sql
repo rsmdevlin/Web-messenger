@@ -50,6 +50,18 @@ CREATE TABLE IF NOT EXISTS message_reactions (
   UNIQUE KEY unique_reaction (message_id, user_id, reaction)
 );
 
+-- Create participants table for group chats
+CREATE TABLE IF NOT EXISTS participants (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  chat_id INT NOT NULL,
+  user_id INT NOT NULL,
+  role VARCHAR(50) DEFAULT 'member',
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_participant (chat_id, user_id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
@@ -58,3 +70,5 @@ CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
 CREATE INDEX IF NOT EXISTS idx_message_reactions_message_id ON message_reactions(message_id);
 CREATE INDEX IF NOT EXISTS idx_message_reactions_user_id ON message_reactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_participants_chat_id ON participants(chat_id);
+CREATE INDEX IF NOT EXISTS idx_participants_user_id ON participants(user_id);
