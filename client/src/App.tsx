@@ -294,6 +294,7 @@ export default function App() {
         user={user}
         onBack={() => setShowSettings(false)}
         onUserUpdate={setUser}
+        onLogout={handleLogout}
       />
     );
   }

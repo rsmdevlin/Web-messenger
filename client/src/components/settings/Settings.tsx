@@ -16,7 +16,7 @@ interface Props {
   user: User;
   onBack: () => void;
   onUserUpdate: (user: User) => void;
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
@@ -310,7 +310,7 @@ export default function Settings({ user, onBack, onUserUpdate, onLogout }: Props
 
             <div className="settings-divider" />
 
-            <button onClick={onLogout} className="btn-danger">
+            <button onClick={() => onLogout?.()} className="btn-danger">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path
                   d="M6 14H2V2H6M10 10L14 6L10 2M14 6H6"
