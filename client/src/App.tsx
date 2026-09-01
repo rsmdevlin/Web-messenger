@@ -58,11 +58,13 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [sidebarVisible, setSidebarVisible] = useState(false);
+
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesLoadedRef = useRef<boolean>(false);
 
-  // AUTH CHECK - Run once on mount
+  // AUTH CHECK
   const checkAuth = useCallback(async () => {
     try {
       const response = await api.get("/auth/me");
@@ -82,12 +84,14 @@ export default function App() {
     checkAuth();
   }, [checkAuth]);
 
-  // Handle auth success - recheck auth immediately
-  const handleAuthSuccess = useCallback(async () => {
-    await checkAuth();
-  }, [checkAuth]);
+  // APPLY THEME
+  useEffect(() => {
+    if (user?.theme) {
+      document.documentElement.setAttribute('data-theme', user.theme);
+    }
+  }, [user?.theme]);
 
-  // SOCKET.IO SETUP - Initialize when authenticated
+  // SOCKET SETUP
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
@@ -101,41 +105,27 @@ export default function App() {
 
     newSocket.on("connect", () => {
       console.log("✅ Socket connected");
-      // Reload chats when socket connects to ensure data is fresh
-      loadChats();
     });
 
     newSocket.on("new_message", (data: Message) => {
-      if (data && data.sender_id && selectedChat && data.chat_id === selectedChat.id) {
-        // Only add if not already in messages (avoid duplicates from own send)
-        setMessages((prev) => {
-          const exists = prev.some((m) => m.id === data.id);
-          if (!exists) {
-            return [...prev, data];
-          }
-          return prev;
-        });
-      }
+      if (!data?.id || !selectedChat || data.chat_id !== selectedChat.id) return;
+
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === data.id);
+        return exists ? prev : [...prev, data];
+      });
     });
 
-    newSocket.on("typing", (data: { username: string; isTyping: boolean; count: number }) => {
-      // Don't show typing indicator for current user
+    newSocket.on("typing", (data: { username: string; isTyping: boolean }) => {
       if (data.username === user.username) return;
 
       if (data.isTyping) {
-        setTypingUsers((prev) => {
-          if (!prev.includes(data.username)) {
-            return [...prev, data.username];
-          }
-          return prev;
-        });
+        setTypingUsers((prev) =>
+          prev.includes(data.username) ? prev : [...prev, data.username]
+        );
       } else {
         setTypingUsers((prev) => prev.filter((u) => u !== data.username));
       }
-    });
-
-    newSocket.on("message_reaction", () => {
-      // Handle message reactions
     });
 
     socketRef.current = newSocket;
@@ -143,40 +133,32 @@ export default function App() {
     return () => {
       newSocket.disconnect();
     };
-  }, [isAuthenticated, user, selectedChat?.id]);
+  }, [isAuthenticated, user?.username, selectedChat?.id]);
 
-  // LOAD CHATS - Memoized to prevent infinite loops
+  // LOAD CHATS
   const loadChats = useCallback(async () => {
     if (!isAuthenticated || !user) return;
 
     try {
       const response = await api.get("/chats");
-      console.log("📋 Chats loaded:", response.data);
       if (response.data && Array.isArray(response.data)) {
         setChats(response.data);
       }
     } catch (err) {
-      console.error("❌ Failed to load chats:", err);
-      setChats([]);
+      console.error("Failed to load chats:", err);
     }
   }, [isAuthenticated, user]);
 
-  // Apply theme to document
-  useEffect(() => {
-    if (user?.theme) {
-      document.documentElement.setAttribute('data-theme', user.theme);
-    }
-  }, [user?.theme]);
-
-  // Load chats on auth
   useEffect(() => {
     loadChats();
-    const interval = setInterval(loadChats, 30000);
-    return () => clearInterval(interval);
   }, [loadChats]);
 
-  // LOAD MESSAGES - When chat is selected
+  // LOAD MESSAGES - RESET FLAG WHEN CHAT CHANGES
   useEffect(() => {
+    messagesLoadedRef.current = false;
+    setMessages([]);
+    setTypingUsers([]);
+
     if (!selectedChat || !isAuthenticated) return;
 
     const loadMessages = async () => {
@@ -184,7 +166,11 @@ export default function App() {
         const response = await api.get(`/messages/${selectedChat.id}`);
         if (response.data && Array.isArray(response.data)) {
           setMessages(response.data);
-          setTypingUsers([]);
+          messagesLoadedRef.current = true;
+
+          if (socketRef.current) {
+            socketRef.current.emit("join_chat", { chat_id: selectedChat.id });
+          }
         }
       } catch (err) {
         console.error("Failed to load messages:", err);
@@ -193,28 +179,17 @@ export default function App() {
     };
 
     loadMessages();
-
-    if (socketRef.current) {
-      socketRef.current.emit("join_chat", { chat_id: selectedChat.id });
-    }
   }, [selectedChat?.id, isAuthenticated]);
 
-  // Auto-scroll to bottom when messages update
+  // AUTO SCROLL
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesLoadedRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
     if (!selectedChat || !user || !content.trim()) return;
-
-    // Stop typing indicator
-    if (socketRef.current) {
-      socketRef.current.emit("typing", {
-        chat_id: selectedChat.id,
-        username: user.username,
-        isTyping: false,
-      });
-    }
 
     try {
       const response = await api.post("/messages", {
@@ -224,7 +199,14 @@ export default function App() {
 
       if (response.data) {
         setMessages((prev) => [...prev, response.data]);
-        // Don't emit socket - server will broadcast to room
+      }
+
+      if (socketRef.current) {
+        socketRef.current.emit("typing", {
+          chat_id: selectedChat.id,
+          username: user.username,
+          isTyping: false,
+        });
       }
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -232,19 +214,17 @@ export default function App() {
   };
 
   const handleTyping = (isTyping: boolean) => {
-    if (!selectedChat || !user) return;
+    if (!selectedChat || !user || !socketRef.current) return;
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    if (socketRef.current) {
-      socketRef.current.emit("typing", {
-        chat_id: selectedChat.id,
-        username: user.username,
-        isTyping,
-      });
-    }
+    socketRef.current.emit("typing", {
+      chat_id: selectedChat.id,
+      username: user.username,
+      isTyping,
+    });
 
     if (isTyping) {
       typingTimeoutRef.current = setTimeout(() => {
@@ -261,11 +241,13 @@ export default function App() {
 
   const handleCreateChat = async (name: string, targetUserId?: number) => {
     if (!name.trim()) return;
+
     try {
       const response = await api.post("/chats", {
         name: name.trim(),
         targetUserId,
       });
+
       if (response.data) {
         setChats((prev) => [response.data, ...prev]);
         setSelectedChat(response.data);
@@ -283,10 +265,6 @@ export default function App() {
       setChats([]);
       setSelectedChat(null);
       setMessages([]);
-      setShowSettings(false);
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
     } catch (err) {
       console.error("Failed to logout:", err);
     }
@@ -301,7 +279,7 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    return <AuthScreen onAuthSuccess={handleAuthSuccess} />;
+    return <AuthScreen onAuthSuccess={checkAuth} />;
   }
 
   if (showSettings && user) {
@@ -323,7 +301,7 @@ export default function App() {
             selectedChat={selectedChat}
             onSelectChat={(chat) => {
               setSelectedChat(chat);
-              setSidebarVisible(false); // Hide sidebar on mobile after selecting
+              setSidebarVisible(false);
             }}
             onCreateChat={handleCreateChat}
             searchQuery={searchQuery}
@@ -335,6 +313,7 @@ export default function App() {
           />
         )}
       </div>
+
       <div className="app-main">
         {selectedChat && user ? (
           <>
@@ -376,7 +355,7 @@ export default function App() {
               />
             </svg>
             <p>Select a chat</p>
-            <span>or create a new one</span>
+            <span>to start messaging</span>
           </div>
         )}
       </div>

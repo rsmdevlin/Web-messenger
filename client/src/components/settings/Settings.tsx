@@ -81,11 +81,16 @@ export default function Settings({ user, onBack, onUserUpdate }: Props) {
   };
 
   const handleUpdateDisplayName = async () => {
+    if (!displayName.trim()) return;
     setLoading(true);
     setError("");
     try {
-      const response = await api.put("/user/display-name", { displayName });
-      onUserUpdate(response.data);
+      const response = await api.put("/user/display-name", { displayName: displayName.trim() });
+      if (response.data && response.data[0]) {
+        onUserUpdate(response.data[0]);
+      } else if (response.data) {
+        onUserUpdate(response.data);
+      }
       setSuccess("Display name updated");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
