@@ -28,6 +28,7 @@ const api = axios.create({
 export default function Settings({ user, onBack, onUserUpdate, onLogout }: Props) {
   const [tab, setTab] = useState<"profile" | "account" | "appearance" | "about">("profile");
   const [displayName, setDisplayName] = useState(user.displayName || "");
+  const [username, setUsername] = useState(user.username || "");
   const [newEmail, setNewEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,6 +76,29 @@ export default function Settings({ user, onBack, onUserUpdate, onLogout }: Props
       setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to update display name");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateUsername = async () => {
+    if (!username.trim() || username === user.username) return;
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.put("/user/username", { username: username.trim() });
+      if (response.data && response.data[0]) {
+        onUserUpdate(response.data[0]);
+        setUsername(response.data[0].username);
+      } else if (response.data) {
+        onUserUpdate(response.data);
+        setUsername(response.data.username);
+      }
+      setSuccess("Username updated successfully");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to update username");
+      setUsername(user.username);
     } finally {
       setLoading(false);
     }
@@ -240,11 +264,27 @@ export default function Settings({ user, onBack, onUserUpdate, onLogout }: Props
               </div>
             </div>
 
-            <div className="settings-info">
-              <div className="info-row">
-                <span className="info-label">@Username:</span>
-                <span className="info-value">@{user.username}</span>
+            <div className="settings-field">
+              <label htmlFor="username">@Username</label>
+              <div className="field-edit">
+                <input
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Your username"
+                  disabled={loading}
+                />
+                <button
+                  onClick={handleUpdateUsername}
+                  className="btn-action"
+                  disabled={loading || username === user.username}
+                >
+                  {loading ? "Saving..." : "Save"}
+                </button>
               </div>
+            </div>
+
+            <div className="settings-info">
               <div className="info-row">
                 <span className="info-label">ID:</span>
                 <span className="info-value">{user.id}</span>
