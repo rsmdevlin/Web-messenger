@@ -419,9 +419,10 @@ app.get("/api/user/search/:query", authMiddleware, async (req: Request, res: Res
     }
     const conn = await pool.getConnection();
     try {
+      // Search only by username, not display_name
       const [users]: any = await conn.execute(
-        "SELECT id, username, email, display_name, avatar FROM users WHERE username LIKE ? OR display_name LIKE ? LIMIT 10",
-        [`%${query}%`, `%${query}%`]
+        "SELECT id, username, email, display_name, avatar FROM users WHERE username LIKE ? LIMIT 10",
+        [`%${query}%`]
       );
       res.json(users || []);
     } finally {
