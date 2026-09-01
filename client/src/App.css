@@ -25,11 +25,15 @@
   flex-direction: column;
   background: var(--color-bg-primary);
   overflow: hidden;
-  animation: slideInLeft 0.3s var(--easing-ease-in-out);
+  position: relative;
+}
+
+.app-mobile-sidebar {
+  animation: slideInRight 0.35s var(--easing-ease-in-out);
 }
 
 .app-mobile-chat {
-  position: relative;
+  animation: slideInLeft 0.35s var(--easing-ease-in-out);
 }
 
 .mobile-back-btn {
@@ -165,9 +169,12 @@
     justify-content: flex-start;
   }
 
-  .app-mobile-sidebar,
+  .app-mobile-sidebar {
+    animation: slideInRight 0.35s var(--easing-ease-in-out);
+  }
+
   .app-mobile-chat {
-    animation: slideInLeft 0.3s var(--easing-ease-in-out);
+    animation: slideInLeft 0.35s var(--easing-ease-in-out);
   }
 
   .app-desktop-layout,
