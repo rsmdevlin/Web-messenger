@@ -10,6 +10,7 @@ interface Chat {
   type: string;
   created_by: number;
   created_at: string;
+  target_user_id?: number;
 }
 
 interface Message {
@@ -21,6 +22,7 @@ interface Message {
   is_read: number;
   created_at: string;
   username?: string;
+  displayName?: string;
   avatar?: string;
 }
 
@@ -28,6 +30,7 @@ interface User {
   id: number;
   username: string;
   avatar?: string;
+  displayName?: string;
 }
 
 interface Props {
