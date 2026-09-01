@@ -473,6 +473,22 @@ app.post("/api/chats", authMiddleware, async (req: Request, res: Response) => {
     const session = (req as any).session;
     const conn = await pool.getConnection();
     try {
+      // For direct chats with a target user, check if chat already exists in either direction
+      if (targetUserId) {
+        const [existing]: any = await conn.execute(
+          `SELECT id, name FROM chats WHERE type = 'direct' AND (
+            (created_by = ? AND target_user_id = ?) OR
+            (created_by = ? AND target_user_id = ?)
+          )`,
+          [session.userId, targetUserId, targetUserId, session.userId]
+        );
+
+        if (existing.length > 0) {
+          // Chat already exists, return it
+          return res.status(200).json(existing[0]);
+        }
+      }
+
       const [result]: any = await conn.execute(
         "INSERT INTO chats (name, type, created_by, target_user_id, created_at) VALUES (?, ?, ?, ?, NOW())",
         [name.trim(), "direct", session.userId, targetUserId || null]
