@@ -9,6 +9,7 @@ interface Message {
   is_read: number;
   created_at: string;
   username?: string;
+  displayName?: string;
   avatar?: string;
 }
 
@@ -34,8 +35,8 @@ export default function MessageBubble({ message, isOwn }: Props) {
       )}
 
       <div className="message-wrap">
-        {!isOwn && message.username && (
-          <div className="message-username">{message.username}</div>
+        {!isOwn && (message.displayName || message.username) && (
+          <div className="message-username">{message.displayName || message.username}</div>
         )}
 
         <div className="message-bubble-container">

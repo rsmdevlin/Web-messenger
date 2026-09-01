@@ -45,6 +45,7 @@ interface Message {
   is_read: number;
   created_at: string;
   username?: string;
+  displayName?: string;
   avatar?: string;
 }
 
