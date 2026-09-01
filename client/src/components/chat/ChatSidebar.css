@@ -46,16 +46,31 @@
   cursor: pointer;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.create-chat-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(91, 141, 255, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .create-chat-btn:hover {
   background: var(--color-surface-secondary);
   color: var(--color-accent-primary);
-  transform: scale(1.05);
+  transform: scale(1.08) rotate(90deg);
+}
+
+.create-chat-btn:hover::before {
+  opacity: 1;
 }
 
 .create-chat-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.95) rotate(90deg);
 }
 
 /* ========== SEARCH CONTAINER ========== */
@@ -134,6 +149,17 @@
   cursor: pointer;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
   border-bottom: 1px solid var(--color-border-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.search-result-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--color-accent-primary), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .search-result-item:last-child {
@@ -142,6 +168,11 @@
 
 .search-result-item:hover {
   background: var(--color-surface-primary);
+  padding-left: calc(var(--space-4) + 4px);
+}
+
+.search-result-item:hover::before {
+  opacity: 0.08;
 }
 
 .search-result-item:focus-visible {
@@ -214,10 +245,26 @@
   position: relative;
   animation: slideInLeft 0.3s var(--easing-ease-in-out);
   opacity: 1;
+  overflow: hidden;
+}
+
+.chat-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--color-accent-primary), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
+  pointer-events: none;
 }
 
 .chat-row:hover {
   background: var(--color-surface-primary);
+  padding-left: calc(var(--space-4) + 2px);
+}
+
+.chat-row:hover::before {
+  opacity: 0.05;
 }
 
 .chat-row:focus-visible {
@@ -229,6 +276,7 @@
   background: var(--color-surface-secondary);
   border-left: 3px solid var(--color-accent-primary);
   padding-left: calc(var(--space-4) - 3px);
+  box-shadow: inset 8px 0 16px rgba(91, 141, 255, 0.08);
 }
 
 /* ========== CHAT AVATAR ========== */
@@ -251,10 +299,22 @@
   font-weight: var(--font-weight-semibold);
   overflow: hidden;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
+  box-shadow: 0 4px 12px rgba(91, 141, 255, 0.15);
+  position: relative;
+}
+
+.avatar-circle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 50%);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
 }
 
 .chat-row:hover .avatar-circle {
-  transform: scale(1.08);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(91, 141, 255, 0.25);
 }
 
 .avatar-circle img {
@@ -494,11 +554,27 @@
   color: var(--color-text-tertiary);
   cursor: pointer;
   transition: all var(--duration-fast) var(--easing-ease-in-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(91, 141, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .footer-btn:hover {
   background: var(--color-surface-secondary);
   color: var(--color-accent-primary);
+  transform: scale(1.08);
+}
+
+.footer-btn:hover::before {
+  opacity: 1;
 }
 
 .footer-btn:active {
