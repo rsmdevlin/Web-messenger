@@ -1,0 +1,190 @@
+.group-members-modal {
+  background: var(--color-bg-primary, #000);
+  border: 2px solid var(--color-accent-primary, #00FF41);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 450px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+  animation: modalSlideUp 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.group-members-modal h2 {
+  color: var(--color-accent-primary, #00FF41);
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+}
+
+.members-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.member-item:hover {
+  background: rgba(0, 255, 65, 0.05);
+  border-color: var(--color-accent-primary, #00FF41);
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 255, 65, 0.2), rgba(0, 255, 65, 0.1));
+  border: 1px solid var(--color-accent-primary, #00FF41);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-primary, #00FF41);
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member-name {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.member-badge.admin {
+  background: rgba(0, 255, 65, 0.2);
+  color: var(--color-accent-primary, #00FF41);
+  border: 1px solid var(--color-accent-primary, #00FF41);
+}
+
+.member-username {
+  color: rgba(0, 255, 65, 0.6);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.members-loading {
+  text-align: center;
+  color: rgba(0, 255, 65, 0.7);
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn.close {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 65, 0.5);
+  color: rgba(0, 255, 65, 0.7);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn.close:hover {
+  border-color: var(--color-accent-primary, #00FF41);
+  color: var(--color-accent-primary, #00FF41);
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--color-accent-primary, #00FF41);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  transform: scale(1.2);
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+@media (max-width: 480px) {
+  .group-members-modal {
+    width: 95%;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .group-members-modal h2 {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .member-item {
+    padding: 10px;
+  }
+
+  .member-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .member-name {
+    font-size: 13px;
+  }
+
+  .member-username {
+    font-size: 11px;
+  }
+}

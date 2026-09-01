@@ -219,6 +219,41 @@
   }
 }
 
+/* ========== MEDIA CONTENT ========== */
+.media-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.media-preview {
+  width: 100%;
+  max-width: 300px;
+  max-height: 400px;
+  border-radius: 8px;
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  object-fit: cover;
+}
+
+.media-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+}
+
+.media-filename {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.media-size {
+  color: rgba(0, 255, 65, 0.6);
+  font-family: 'Courier New', monospace;
+}
+
 /* ========== ANIMATIONS ========== */
 @keyframes messageSlideIn {
   0% {

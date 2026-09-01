@@ -1,9 +1,17 @@
 import { useRef, useEffect, useState } from "react";
+import axios from "axios";
 import MessageBubble from "./MessageBubble";
 import Composer from "./Composer";
 import Skeleton from "../common/Skeleton";
 import UserProfile from "../profile/UserProfile";
+import GroupMembersModal from "./GroupMembersModal";
 import "./ChatWindow.css";
+
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+});
 
 interface Chat {
   id: number;
@@ -73,6 +81,7 @@ export default function ChatWindow({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [readMessageIds, setReadMessageIds] = useState<Set<number>>(new Set());
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showGroupMembers, setShowGroupMembers] = useState(false);
 
   // Get online status for direct chat
   const isTargetUserOnline = chat.target_user_id ? onlineUsers.has(chat.target_user_id) : false;
@@ -193,6 +202,20 @@ export default function ChatWindow({
               />
             </svg>
           </button>
+          {chat.type === "group" && (
+            <button
+              className="header-btn"
+              title="Members"
+              onClick={() => setShowGroupMembers(true)}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="6" cy="4" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M2 8C2 6.5 3.5 5.5 6 5.5C8.5 5.5 10 6.5 10 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="12" cy="5" r="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M9 9C9.5 8.8 10.2 8.5 11 8.5C13 8.5 14.5 9.5 14.5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -256,8 +279,30 @@ export default function ChatWindow({
         <Composer
           onSendMessage={handleSendMessage}
           onChange={handleComposerChange}
-          onSendMedia={(file, preview) => {
-            console.log("📸 Media selected:", file.name);
+          onSendMedia={async (file, preview) => {
+            if (!selectedChat || !user) return;
+            try {
+              const reader = new FileReader();
+              reader.onload = async (e) => {
+                const base64 = e.target?.result as string;
+                const mediaData = {
+                  filename: file.name,
+                  type: file.type,
+                  size: file.size,
+                  preview: base64,
+                };
+
+                await api.post("/messages", {
+                  chat_id: selectedChat.id,
+                  content: file.name,
+                  type: "media",
+                  media_data: mediaData,
+                });
+              };
+              reader.readAsDataURL(file);
+            } catch (err) {
+              console.error("Failed to send media:", err);
+            }
           }}
         />
       </div>
@@ -268,6 +313,13 @@ export default function ChatWindow({
           onClose={() => setShowUserProfile(false)}
           isOnline={onlineUsers.has(chat.target_user_id)}
           lastSeen={targetUserLastSeen}
+        />
+      )}
+
+      {showGroupMembers && chat.type === "group" && (
+        <GroupMembersModal
+          chatId={chat.id}
+          onClose={() => setShowGroupMembers(false)}
         />
       )}
     </div>

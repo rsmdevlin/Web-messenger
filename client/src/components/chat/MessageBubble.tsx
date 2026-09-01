@@ -13,6 +13,12 @@ interface Message {
   username?: string;
   displayName?: string;
   avatar?: string;
+  media_data?: {
+    filename: string;
+    type: string;
+    size: number;
+    preview: string;
+  };
 }
 
 interface Props {
@@ -108,7 +114,32 @@ export default function MessageBubble({ message, isOwn, onDelete, onReact }: Pro
             />
           </svg>
           <div className="message-bubble">
-            <p className="message-text">{message.content}</p>
+            {message.type === "media" && message.media_data ? (
+              <div className="media-content">
+                {message.media_data.type.startsWith("image/") && (
+                  <img
+                    src={message.media_data.preview}
+                    alt={message.media_data.filename}
+                    className="media-preview"
+                  />
+                )}
+                {message.media_data.type.startsWith("video/") && (
+                  <video
+                    src={message.media_data.preview}
+                    controls
+                    className="media-preview"
+                  />
+                )}
+                <div className="media-info">
+                  <span className="media-filename">{message.media_data.filename}</span>
+                  <span className="media-size">
+                    {(message.media_data.size / 1024 / 1024).toFixed(2)} MB
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="message-text">{message.content}</p>
+            )}
             <div className="message-footer">
               <span className="message-time">{formattedTime}</span>
               {isOwn && (

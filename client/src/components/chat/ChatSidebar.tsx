@@ -37,6 +37,7 @@ interface Props {
   selectedChat: Chat | null;
   onSelectChat: (chat: Chat) => void;
   onCreateChat: (name: string, targetUserId?: number) => void;
+  onCreateGroup?: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   user: User;
@@ -56,6 +57,7 @@ export default function ChatSidebar({
   selectedChat,
   onSelectChat,
   onCreateChat,
+  onCreateGroup,
   searchQuery,
   onSearchChange,
   user,
@@ -163,6 +165,18 @@ export default function ChatSidebar({
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M9 2V16M2 9H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            className="create-group-btn"
+            onClick={onCreateGroup}
+            title="New group"
+            aria-label="Create new group"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="6" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10 7C11.1 7 12 6.1 12 5C12 3.9 11.1 3 10 3M3 9C4.1 9 5 8.1 5 7M2 14C2 12 3.5 11 6 11C8.5 11 10 12 10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 9C11.1 9 12 8.1 12 7M11 14C11 12.5 12.2 11.5 14 11.5C15.8 11.5 17 12.5 17 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>

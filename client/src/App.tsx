@@ -6,6 +6,7 @@ import ChatSidebar from "./components/chat/ChatSidebar";
 import ChatWindow from "./components/chat/ChatWindow";
 import Settings from "./components/settings/Settings";
 import UserProfile from "./components/profile/UserProfile";
+import CreateGroupModal from "./components/chat/CreateGroupModal";
 import { useSwipe } from "./hooks/useSwipe";
 import "./App.css";
 
@@ -67,6 +68,8 @@ export default function App() {
   const [targetUserLastSeen, setTargetUserLastSeen] = useState<string>("");
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -226,9 +229,24 @@ export default function App() {
     }
   }, [isAuthenticated, user]);
 
+  // LOAD ALL USERS FOR GROUP CREATION
+  const loadAllUsers = useCallback(async () => {
+    if (!isAuthenticated || !user) return;
+
+    try {
+      const response = await api.get("/users");
+      if (response.data && Array.isArray(response.data)) {
+        setAllUsers(response.data.filter((u: User) => u.id !== user.id));
+      }
+    } catch (err) {
+      console.error("Failed to load users:", err);
+    }
+  }, [isAuthenticated, user]);
+
   useEffect(() => {
     loadChats();
-  }, [loadChats]);
+    loadAllUsers();
+  }, [loadChats, loadAllUsers]);
 
   // LOAD MESSAGES - RESET FLAG WHEN CHAT CHANGES
   useEffect(() => {
@@ -362,6 +380,27 @@ export default function App() {
     }
   };
 
+  const handleCreateGroup = async (groupName: string, participantIds: number[]) => {
+    if (!groupName.trim() || participantIds.length === 0 || !user) return;
+
+    try {
+      const response = await api.post("/chats", {
+        name: groupName.trim(),
+        isGroup: true,
+        participants: [user.id, ...participantIds],
+      });
+
+      if (response.data) {
+        console.log("✅ Group created:", response.data);
+        setChats((prev) => [response.data, ...prev]);
+        setSelectedChat(response.data);
+        setShowCreateGroup(false);
+      }
+    } catch (err) {
+      console.error("Failed to create group:", err);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout");
@@ -400,6 +439,15 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* GROUP CREATION MODAL */}
+      {showCreateGroup && (
+        <CreateGroupModal
+          users={allUsers}
+          onClose={() => setShowCreateGroup(false)}
+          onCreateGroup={handleCreateGroup}
+        />
+      )}
+
       {/* MOBILE: Show either sidebar or chat */}
       {isMobile ? (
         <>
@@ -414,6 +462,7 @@ export default function App() {
                     setSelectedChat(chat);
                   }}
                   onCreateChat={handleCreateChat}
+                  onCreateGroup={() => setShowCreateGroup(true)}
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
                   user={user}
@@ -461,6 +510,7 @@ export default function App() {
                 selectedChat={selectedChat}
                 onSelectChat={setSelectedChat}
                 onCreateChat={handleCreateChat}
+                onCreateGroup={() => setShowCreateGroup(true)}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 user={user}

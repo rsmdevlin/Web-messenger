@@ -746,7 +746,7 @@ app.get("/api/messages/:chatId", authMiddleware, async (req: Request, res: Respo
 
 app.post("/api/messages", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { chat_id, content } = req.body;
+    const { chat_id, content, type = "text", media_data } = req.body;
     if (!chat_id || !content) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -760,9 +760,10 @@ app.post("/api/messages", authMiddleware, async (req: Request, res: Response) =>
       );
       const isFirstMessage = existingMessages[0].count === 0;
 
+      const messageType = type === "media" ? "media" : "text";
       const [result]: any = await conn.execute(
         "INSERT INTO messages (chat_id, sender_id, content, type, is_read, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
-        [chat_id, session.userId, content, "text", 0]
+        [chat_id, session.userId, content, messageType, 0]
       );
 
       // Get user display info
@@ -777,12 +778,13 @@ app.post("/api/messages", authMiddleware, async (req: Request, res: Response) =>
         chat_id,
         sender_id: session.userId,
         content,
-        type: "text",
+        type: messageType,
         is_read: 0,
         created_at: new Date().toISOString(),
         username: session.username,
         displayName: userInfo.display_name,
         avatar: userInfo.avatar || null,
+        media_data: media_data || null,
       };
       console.log(`📢 Broadcasting message to room chat_${chat_id}:`, message);
       io.to(`chat_${chat_id}`).emit("new_message", message);
@@ -978,6 +980,25 @@ io.on("connection", async (socket) => {
     } catch (error) {
       console.error("❌ Error marking messages as read:", error);
     }
+  });
+
+  socket.on("group_member_added", async (data: { chat_id: number; member_id: number; role: string }) => {
+    console.log(`➕ User ${data.member_id} added to group ${data.chat_id}`);
+    io.to(`chat_${data.chat_id}`).emit("group_member_added", {
+      chat_id: data.chat_id,
+      member_id: data.member_id,
+      role: data.role,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  socket.on("group_member_removed", async (data: { chat_id: number; member_id: number }) => {
+    console.log(`➖ User ${data.member_id} removed from group ${data.chat_id}`);
+    io.to(`chat_${data.chat_id}`).emit("group_member_removed", {
+      chat_id: data.chat_id,
+      member_id: data.member_id,
+      timestamp: new Date().toISOString(),
+    });
   });
 
   socket.on("disconnect", async () => {

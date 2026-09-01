@@ -79,6 +79,50 @@
   transform: scale(0.95) rotate(90deg);
 }
 
+.create-group-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--color-accent-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing-ease-in-out);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.3);
+  margin-left: var(--space-2);
+}
+
+.create-group-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 255, 65, 0.2) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.create-group-btn:hover {
+  background: rgba(0, 255, 65, 0.1);
+  color: var(--color-accent-primary);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+  text-shadow: 0 0 10px var(--color-accent-primary);
+}
+
+.create-group-btn:hover::before {
+  opacity: 1;
+}
+
+.create-group-btn:active {
+  transform: scale(0.95);
+}
+
 /* ========== SEARCH CONTAINER ========== */
 .search-container {
   display: flex;

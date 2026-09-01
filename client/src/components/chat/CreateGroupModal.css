@@ -1,0 +1,196 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.create-group-modal {
+  background: var(--color-bg-primary, #000);
+  border: 2px solid var(--color-accent-primary, #00FF41);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+  animation: modalSlideUp 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--color-accent-primary, #00FF41);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  transform: scale(1.2);
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.create-group-modal h2 {
+  color: var(--color-accent-primary, #00FF41);
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+}
+
+.group-name-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid var(--color-accent-primary, #00FF41);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.group-name-input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary, #00FF41);
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.2);
+  background: rgba(0, 255, 65, 0.1);
+}
+
+.group-name-input::placeholder {
+  color: rgba(0, 255, 65, 0.5);
+}
+
+.members-list {
+  margin-bottom: 20px;
+}
+
+.members-list h3 {
+  color: var(--color-accent-primary, #00FF41);
+  font-size: 12px;
+  text-transform: uppercase;
+  margin: 0 0 12px 0;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+.member-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.member-checkbox:hover {
+  border-color: var(--color-accent-primary, #00FF41);
+  background: rgba(0, 255, 65, 0.05);
+}
+
+.member-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-right: 12px;
+  accent-color: var(--color-accent-primary, #00FF41);
+}
+
+.member-name {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  flex: 1;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn.cancel {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 65, 0.5);
+  color: rgba(0, 255, 65, 0.7);
+}
+
+.btn.cancel:hover:not(:disabled) {
+  border-color: var(--color-accent-primary, #00FF41);
+  color: var(--color-accent-primary, #00FF41);
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+}
+
+.btn.create {
+  background: linear-gradient(135deg, rgba(0, 255, 65, 0.2), rgba(0, 255, 65, 0.1));
+  border: 1px solid var(--color-accent-primary, #00FF41);
+  color: var(--color-accent-primary, #00FF41);
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.2);
+}
+
+.btn.create:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 255, 65, 0.3), rgba(0, 255, 65, 0.2));
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .create-group-modal {
+    width: 95%;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .create-group-modal h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 9px 16px;
+  }
+}
