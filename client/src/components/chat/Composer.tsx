@@ -61,8 +61,9 @@ export default function Composer({ onSendMessage, onChange }: Props) {
       <button
         className={`composer-btn composer-send ${hasText ? "active" : ""}`}
         onClick={handleSend}
-        disabled={!hasText || sending}
+        disabled={sending}
         title="Send"
+        type="button"
       >
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
           <path

@@ -93,7 +93,7 @@ export default function App() {
     }
   }, [user?.theme]);
 
-  // SOCKET SETUP
+  // SOCKET SETUP - Setup once on auth, keep connection alive
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
@@ -110,11 +110,12 @@ export default function App() {
     });
 
     newSocket.on("new_message", (data: Message) => {
-      if (!data?.id || !selectedChat || data.chat_id !== selectedChat.id) return;
+      if (!data?.id) return;
 
       setMessages((prev) => {
         const exists = prev.some((m) => m.id === data.id);
-        return exists ? prev : [...prev, data];
+        if (exists) return prev;
+        return [...prev, data];
       });
     });
 
@@ -135,7 +136,7 @@ export default function App() {
     return () => {
       newSocket.disconnect();
     };
-  }, [isAuthenticated, user?.username, selectedChat?.id]);
+  }, [isAuthenticated, user?.username]);
 
   // LOAD CHATS
   const loadChats = useCallback(async () => {

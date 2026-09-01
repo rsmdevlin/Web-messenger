@@ -145,7 +145,7 @@ export default function ChatSidebar({
         </div>
 
         {/* Search results dropdown */}
-        {isSearchFocused && searchResults.length > 0 && (
+        {searchResults.length > 0 && (
           <div className="search-results">
             {searchResults.map((result) => (
               <div
