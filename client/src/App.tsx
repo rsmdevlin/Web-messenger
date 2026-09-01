@@ -127,16 +127,31 @@ export default function App() {
     });
 
     newSocket.on("connect", () => {
-      console.log("✅ Socket connected");
+      console.log("✅ Socket connected, ID:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("❌ Socket disconnected");
+    });
+
+    newSocket.on("error", (error: any) => {
+      console.error("⚠️ Socket error:", error);
     });
 
     newSocket.on("new_message", (data: Message) => {
       console.log("📨 New message received:", data);
-      if (!data?.id) return;
+      if (!data?.id) {
+        console.warn("⚠️ Message missing ID:", data);
+        return;
+      }
 
       setMessages((prev) => {
         const exists = prev.some((m) => m.id === data.id);
-        if (exists) return prev;
+        if (exists) {
+          console.warn("⚠️ Message already exists, skipping:", data.id);
+          return prev;
+        }
+        console.log("✅ Adding new message to state:", data.id);
         return [...prev, data];
       });
     });
@@ -189,14 +204,21 @@ export default function App() {
     const loadMessages = async () => {
       setLoadingMessages(true);
       try {
+        console.log("📥 Loading messages for chat:", selectedChat.id);
         const response = await api.get(`/messages/${selectedChat.id}`);
         if (response.data && Array.isArray(response.data)) {
+          console.log(`✅ Loaded ${response.data.length} messages`);
           setMessages(response.data);
           messagesLoadedRef.current = true;
 
           if (socketRef.current) {
             console.log("🔌 Joining chat room:", selectedChat.id);
-            socketRef.current.emit("join_chat", { chat_id: selectedChat.id });
+            console.log("🔌 Socket connected?", socketRef.current.connected);
+            socketRef.current.emit("join_chat", { chat_id: selectedChat.id }, (ack: any) => {
+              console.log("🔌 join_chat acknowledged:", ack);
+            });
+          } else {
+            console.warn("⚠️ Socket not available when joining chat");
           }
         }
       } catch (err) {
@@ -222,6 +244,9 @@ export default function App() {
 
     try {
       console.log("📤 Sending message to chat:", selectedChat.id);
+      console.log("📤 User ID:", user.id);
+      console.log("📤 Socket connected?", socketRef.current?.connected);
+
       const response = await api.post("/messages", {
         chat_id: selectedChat.id,
         content: content.trim(),
@@ -229,10 +254,12 @@ export default function App() {
 
       if (response.data) {
         console.log("✅ Message sent successfully:", response.data);
+        console.log("✅ Message ID:", response.data.id, "Sender ID:", response.data.sender_id);
         setMessages((prev) => [...prev, response.data]);
       }
 
       if (socketRef.current) {
+        console.log("📢 Broadcasting typing stop");
         socketRef.current.emit("typing", {
           chat_id: selectedChat.id,
           username: user.username,
@@ -240,17 +267,25 @@ export default function App() {
         });
       }
     } catch (err) {
-      console.error("Failed to send message:", err);
+      console.error("❌ Failed to send message:", err);
     }
   };
 
   const handleTyping = (isTyping: boolean) => {
-    if (!selectedChat || !user || !socketRef.current) return;
+    if (!selectedChat || !user || !socketRef.current) {
+      console.warn("⚠️ Cannot send typing event - missing dependencies", {
+        selectedChat: !!selectedChat,
+        user: !!user,
+        socket: !!socketRef.current,
+      });
+      return;
+    }
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
+    console.log(`📝 Sending typing event: ${isTyping ? "typing" : "stopped"}`);
     socketRef.current.emit("typing", {
       chat_id: selectedChat.id,
       username: user.username,
@@ -260,6 +295,7 @@ export default function App() {
     if (isTyping) {
       typingTimeoutRef.current = setTimeout(() => {
         if (socketRef.current) {
+          console.log("📝 Auto-stopping typing indicator");
           socketRef.current.emit("typing", {
             chat_id: selectedChat.id,
             username: user.username,
