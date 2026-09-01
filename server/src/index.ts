@@ -614,7 +614,7 @@ io.on("connection", (socket) => {
   socket.on("join_chat", (data: { chat_id: number }) => {
     console.log(`👥 Socket ${socket.id} joining room chat_${data.chat_id}`);
     socket.join(`chat_${data.chat_id}`);
-    console.log(`✅ Socket ${socket.id} joined chat_${data.chat_id}. Room size: ${io.to(`chat_${data.chat_id}`).sockets.size}`);
+    console.log(`✅ Socket ${socket.id} joined chat_${data.chat_id}`);
   });
 
   socket.on("send_message", (data: { chat_id: number; content: string; sender_id: number }) => {
