@@ -183,7 +183,11 @@ export default function App() {
     try {
       const response = await api.get("/chats");
       if (response.data && Array.isArray(response.data)) {
-        setChats(response.data);
+        // Deduplicate chats by ID
+        const uniqueChats = Array.from(
+          new Map(response.data.map((chat: Chat) => [chat.id, chat])).values()
+        );
+        setChats(uniqueChats);
       }
     } catch (err) {
       console.error("Failed to load chats:", err);

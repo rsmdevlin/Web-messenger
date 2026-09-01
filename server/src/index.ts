@@ -442,10 +442,11 @@ app.get("/api/chats", authMiddleware, async (req: Request, res: Response) => {
     const conn = await pool.getConnection();
     try {
       const [chats]: any = await conn.execute(
-        `SELECT DISTINCT c.*, COALESCE(u.display_name, u.username) as chat_display_name
+        `SELECT c.id, c.name, c.type, c.created_by, c.created_at, c.target_user_id, COALESCE(u.display_name, u.username) as chat_display_name
          FROM chats c
          LEFT JOIN users u ON c.target_user_id = u.id
          WHERE c.created_by = ? OR c.target_user_id = ?
+         GROUP BY c.id
          ORDER BY c.created_at DESC`,
         [session.userId, session.userId]
       );
