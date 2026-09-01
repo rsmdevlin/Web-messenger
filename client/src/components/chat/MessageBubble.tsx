@@ -1,3 +1,5 @@
+import { useState } from "react";
+import MessageContextMenu from "./MessageContextMenu";
 import "./MessageBubble.css";
 
 interface Message {
@@ -16,9 +18,15 @@ interface Message {
 interface Props {
   message: Message;
   isOwn: boolean;
+  onDelete?: (messageId: number) => void;
+  onReact?: (messageId: number, emoji: string) => void;
 }
 
-export default function MessageBubble({ message, isOwn }: Props) {
+export default function MessageBubble({ message, isOwn, onDelete, onReact }: Props) {
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+  const [reactions, setReactions] = useState<Map<string, number>>(new Map());
+
   const formattedTime = new Date(message.created_at).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -26,8 +34,45 @@ export default function MessageBubble({ message, isOwn }: Props) {
 
   const isRead = message.is_read === 1;
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+    setShowContextMenu(true);
+  };
+
+  const handleLongPress = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setContextMenuPos({ x: touch.clientX, y: touch.clientY });
+    setShowContextMenu(true);
+  };
+
+  const commonMenuItems = [
+    { label: "Copy", icon: "📋", action: () => {
+      navigator.clipboard.writeText(message.content);
+    }},
+    { label: "React", icon: "😊", action: () => {
+      const emoji = prompt("Enter emoji:");
+      if (emoji && onReact) {
+        onReact(message.id, emoji);
+        const newReactions = new Map(reactions);
+        newReactions.set(emoji, (newReactions.get(emoji) || 0) + 1);
+        setReactions(newReactions);
+      }
+    }},
+  ];
+
+  const menuItems = isOwn
+    ? [
+        ...commonMenuItems,
+        { divider: true },
+        { label: "Delete", icon: "🗑️", action: () => {
+          if (onDelete) onDelete(message.id);
+        }, danger: true },
+      ]
+    : commonMenuItems;
+
   return (
-    <div className={`message-group ${isOwn ? "own" : "other"}`}>
+    <div className={`message-group ${isOwn ? "own" : "other"}`} onContextMenu={handleContextMenu} onTouchEnd={handleLongPress}>
       {!isOwn && message.avatar && (
         <div className="message-avatar">
           <img src={message.avatar} alt={message.username} />
@@ -96,7 +141,27 @@ export default function MessageBubble({ message, isOwn }: Props) {
             </div>
           </div>
         </div>
+
+        {reactions.size > 0 && (
+          <div className="message-reactions">
+            {Array.from(reactions.entries()).map(([emoji, count]) => (
+              <div key={emoji} className="reaction-bubble">
+                <span className="reaction-emoji">{emoji}</span>
+                {count > 1 && <span className="reaction-count">{count}</span>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {showContextMenu && (
+        <MessageContextMenu
+          x={contextMenuPos.x}
+          y={contextMenuPos.y}
+          items={menuItems}
+          onClose={() => setShowContextMenu(false)}
+        />
+      )}
     </div>
   );
 }
