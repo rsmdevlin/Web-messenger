@@ -1,36 +1,62 @@
 ﻿/* ============================================
-   BASA MESSENGER — PREMIUM DESIGN SYSTEM
+   BASA MESSENGER — PREMIUM DESIGN SYSTEM v2
    ============================================ */
 
 :root {
-  /* Colors — Premium Dark Palette */
-  --bg: #0A0A0C;
-  --bg-secondary: #12121A;
-  --bg-tertiary: #1A1A24;
-  --surface: #16161E;
-  --surface-hover: #1F1F2A;
-  --surface-active: #252530;
-  
-  --border: #2A2A35;
-  --border-muted: #1F1F2A;
-  --border-focus: #5B8DFF;
-  
-  --text: #E8E8F0;
-  --text-secondary: #B8B8C8;
-  --text-muted: #8888A0;
-  --text-dim: #606078;
-  
-  --accent: #5B8DFF;
-  --accent-light: #7BA3FF;
-  --accent-dark: #3B5FD4;
-  
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error: #EF4444;
-  
-  --online: #10B981;
-  --offline: #6B7280;
-  --away: #F59E0B;
+  /* ========== COLORS — Premium Dark Palette ========== */
+  --color-bg-primary: #0A0A0C;
+  --color-bg-secondary: #12121A;
+  --color-bg-tertiary: #1A1A24;
+
+  --color-surface-primary: #16161E;
+  --color-surface-secondary: #1F1F2A;
+  --color-surface-tertiary: #252530;
+  --color-surface-elevated: #2A2A35;
+
+  --color-border-primary: #2A2A35;
+  --color-border-secondary: #1F1F2A;
+
+  --color-text-primary: #E8E8F0;
+  --color-text-secondary: #B8B8C8;
+  --color-text-tertiary: #8888A0;
+  --color-text-muted: #606078;
+
+  --color-accent-primary: #5B8DFF;
+  --color-accent-secondary: #7BA3FF;
+  --color-accent-dark: #3B5FD4;
+
+  --color-status-online: #10B981;
+  --color-status-away: #F59E0B;
+  --color-status-offline: #6B7280;
+
+  --color-semantic-success: #10B981;
+  --color-semantic-warning: #F59E0B;
+  --color-semantic-error: #EF4444;
+  --color-semantic-info: #3B82F6;
+
+  /* Legacy aliases for compatibility */
+  --bg: var(--color-bg-primary);
+  --bg-secondary: var(--color-bg-secondary);
+  --bg-tertiary: var(--color-bg-tertiary);
+  --surface: var(--color-surface-primary);
+  --surface-hover: var(--color-surface-secondary);
+  --surface-active: var(--color-surface-tertiary);
+  --border: var(--color-border-primary);
+  --border-muted: var(--color-border-secondary);
+  --border-focus: var(--color-accent-primary);
+  --text: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-tertiary);
+  --text-dim: var(--color-text-muted);
+  --accent: var(--color-accent-primary);
+  --accent-light: var(--color-accent-secondary);
+  --accent-dark: var(--color-accent-dark);
+  --success: var(--color-semantic-success);
+  --warning: var(--color-semantic-warning);
+  --error: var(--color-semantic-error);
+  --online: var(--color-status-online);
+  --offline: var(--color-status-offline);
+  --away: var(--color-status-away);
   
   /* Typography */
   --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
