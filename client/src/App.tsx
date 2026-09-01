@@ -81,6 +81,7 @@ export default function App() {
     }
   }, []);
 
+  // CHECK AUTH ON MOUNT
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
