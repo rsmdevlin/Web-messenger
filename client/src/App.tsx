@@ -57,7 +57,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
 
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -320,10 +320,10 @@ export default function App() {
             <button
               className="sidebar-toggle"
               onClick={() => setSidebarVisible(!sidebarVisible)}
-              title="Toggle sidebar"
+              title="Back to chats"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M2 5H18M2 10H18M2 15H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path d="M12 16L6 10L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <ChatWindow
