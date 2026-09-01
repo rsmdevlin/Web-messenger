@@ -1,19 +1,29 @@
-import "./Skeleton.css";
+﻿import "./Skeleton.css";
 
-interface SkeletonProps {
-  type?: "message" | "chat" | "avatar" | "text" | "button";
-  width?: string;
+interface Props {
+  type?: "message" | "chatItem" | "line";
   height?: string;
+  width?: string;
   count?: number;
 }
 
-export default function Skeleton({ type = "text", width = "100%", height = "20px", count = 1 }: SkeletonProps) {
-  const items = Array.from({ length: count });
+export default function Skeleton({ type = "line", height = "20px", width = "100%", count = 1 }: Props) {
+  const getSkeletonClass = () => {
+    switch (type) {
+      case "message":
+        return "skeleton-message";
+      case "chatItem":
+        return "skeleton-chat-item";
+      case "line":
+      default:
+        return "skeleton-line";
+    }
+  };
 
   return (
     <>
-      {items.map((_, i) => (
-        <div key={i} className={`skeleton skeleton-${type}`} style={{ width, height }} />
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={`skeleton ${getSkeletonClass()}`} style={{ height, width }} />
       ))}
     </>
   );

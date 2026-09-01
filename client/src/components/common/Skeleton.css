@@ -1,16 +1,69 @@
-.skeleton {
+﻿.skeleton {
   background: linear-gradient(
     90deg,
-    var(--surface) 0%,
-    var(--surface-hover) 50%,
-    var(--surface) 100%
+    var(--color-surface-primary) 0%,
+    var(--color-surface-secondary) 50%,
+    var(--color-surface-primary) 100%
   );
   background-size: 200% 100%;
-  animation: skeleton-loading 2s infinite;
+  animation: shimmer 2s infinite;
   border-radius: var(--radius-md);
 }
 
-@keyframes skeleton-loading {
+.skeleton-line {
+  height: 20px;
+  width: 100%;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-message {
+  height: 60px;
+  width: 70%;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-3);
+}
+
+.skeleton-chat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.skeleton-chat-item::before {
+  content: "";
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-primary) 0%,
+    var(--color-surface-secondary) 50%,
+    var(--color-surface-primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-chat-item::after {
+  content: "";
+  flex: 1;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-primary) 0%,
+    var(--color-surface-secondary) 50%,
+    var(--color-surface-primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
   0% {
     background-position: 200% 0;
   }
@@ -19,26 +72,9 @@
   }
 }
 
-.skeleton-message {
-  border-radius: 18px;
-  margin-bottom: 12px;
-}
-
-.skeleton-chat {
-  height: 64px;
-  border-radius: var(--radius-md);
-  margin-bottom: 8px;
-}
-
-.skeleton-avatar {
-  border-radius: 50%;
-}
-
-.skeleton-text {
-  border-radius: 4px;
-}
-
-.skeleton-button {
-  border-radius: var(--radius-md);
-  min-height: 40px;
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--color-surface-secondary);
+  }
 }
