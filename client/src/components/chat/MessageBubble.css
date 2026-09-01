@@ -57,7 +57,7 @@
   color: var(--color-text-tertiary);
   font-weight: var(--font-weight-medium);
   padding: 0 var(--space-3);
-  animation: slideInLeft 0.3s ease forwards;
+  animation: slideInLeft 0.3s var(--easing-ease-in-out) forwards;
 }
 
 .message-bubble-container {
@@ -77,16 +77,19 @@
 .message-bubble-svg .bubble-bg {
   color: inherit;
   transition: all var(--duration-normal) var(--easing-ease-in-out);
+  animation: svgBubbleAppear 0.4s var(--easing-ease-in-out);
 }
 
 .message-group.own .message-bubble-svg .bubble-bg {
   fill: var(--color-accent-primary);
-  opacity: 0.15;
+  opacity: 0;
+  animation: svgBubbleAppear 0.4s var(--easing-bounce) forwards;
 }
 
 .message-group.other .message-bubble-svg .bubble-bg {
   fill: var(--color-surface-secondary);
-  opacity: 0.8;
+  opacity: 0;
+  animation: svgBubbleAppear 0.4s var(--easing-bounce) forwards;
 }
 
 .message-bubble {
@@ -128,7 +131,7 @@
   font-size: var(--font-size-base);
   line-height: 1.5;
   margin: 0;
-  animation: textFadeIn 0.4s ease 0.1s forwards;
+  animation: textFadeIn 0.4s var(--easing-ease-in-out) 0.15s forwards;
   opacity: 0;
 }
 
@@ -141,20 +144,20 @@
 }
 
 .message-time {
-  opacity: 0.7;
-  animation: timeFadeIn 0.3s ease 0.2s forwards;
   opacity: 0;
+  animation: timeFadeIn 0.3s var(--easing-ease-in-out) 0.25s forwards;
 }
 
 .message-status {
   flex-shrink: 0;
-  opacity: 0.6;
-  animation: timeFadeIn 0.3s ease 0.2s forwards;
   opacity: 0;
+  animation: statusPulse 0.4s var(--easing-ease-in-out) 0.3s forwards;
+  display: inline-flex;
 }
 
 .message-status.read {
   opacity: 1;
+  color: var(--color-accent-primary);
 }
 
 /* ========== RESPONSIVE ========== */
@@ -200,7 +203,7 @@
 @keyframes messageSlideIn {
   0% {
     opacity: 0;
-    transform: translateY(16px) scale(0.9);
+    transform: translateY(20px) scale(0.9);
   }
   60% {
     transform: translateY(-2px) scale(1.02);
@@ -214,10 +217,10 @@
 @keyframes avatarPop {
   0% {
     opacity: 0;
-    transform: scale(0.3) rotate(-20deg);
+    transform: scale(0.3) rotate(-30deg);
   }
   60% {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.12) rotate(5deg);
   }
   100% {
     opacity: 1;
@@ -230,12 +233,27 @@
     opacity: 0;
     transform: translateX(-20px) scale(0.9);
   }
-  50% {
+  60% {
     transform: translateX(2px) scale(1.01);
   }
   100% {
     opacity: 1;
     transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes svgBubbleAppear {
+  0% {
+    opacity: 0;
+    filter: drop-shadow(0 0 0 rgba(91, 141, 255, 0));
+  }
+  60% {
+    opacity: 0.5;
+    filter: drop-shadow(0 4px 12px rgba(91, 141, 255, 0.2));
+  }
+  100% {
+    opacity: var(--bubble-opacity, 0.8);
+    filter: drop-shadow(0 4px 16px rgba(91, 141, 255, 0.15));
   }
 }
 
@@ -259,124 +277,25 @@
   }
 }
 
+@keyframes statusPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes slideInLeft {
   from {
     opacity: 0;
     transform: translateX(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .message-wrap {
-    max-width: 80%;
-  }
-
-  .message-text {
-    font-size: 14px;
-  }
-
-  .message-bubble {
-    padding: 10px 14px;
-    border-radius: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .message-wrap {
-    max-width: 90%;
-  }
-
-  .message-bubble {
-    padding: 8px 12px;
-    border-radius: 12px;
-  }
-
-  .message-text {
-    font-size: 13px;
-  }
-
-  .message-time {
-    font-size: 10px;
-  }
-
-  .message-avatar {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
-}
-
-/* ANIMATIONS */
-@keyframes messageSlideIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-  }
-  40% {
-    transform: translateY(-4px) scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes avatarPop {
-  0% {
-    opacity: 0;
-    transform: scale(0.3) rotate(-30deg);
-  }
-  60% {
-    transform: scale(1.15) rotate(10deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-@keyframes bubbleEnter {
-  0% {
-    opacity: 0;
-    transform: translateX(-30px) scale(0.85);
-  }
-  50% {
-    transform: translateX(2px) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes textFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes timeFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInLeftSmall {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
   }
   to {
     opacity: 1;
