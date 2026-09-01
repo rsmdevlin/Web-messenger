@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import CreateChatModal from "./CreateChatModal";
 import "./ChatSidebar.css";
 import axios from "axios";
@@ -13,6 +13,7 @@ interface Chat {
   last_message?: string;
   last_message_time?: string;
   unread_count?: number;
+  avatar?: string;
 }
 
 interface User {
@@ -65,7 +66,6 @@ export default function ChatSidebar({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [typingUsers, setTypingUsers] = useState<Map<number, string>>(new Map());
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const filteredChats = useMemo(() => {
@@ -167,55 +167,57 @@ export default function ChatSidebar({
           </button>
         </div>
 
-        {/* Search */}
-        <div className={`search-box ${isSearchFocused ? "focused" : ""}`}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M10 10L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search chats or @username"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => {
-              setTimeout(() => setIsSearchFocused(false), 200);
-            }}
-            aria-label="Search chats"
-          />
-        </div>
-
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className="search-results" role="listbox">
-            {searchResults.map((result) => (
-              <div
-                key={result.id}
-                className="search-result-item"
-                onClick={() => handleSelectSearchResult(result)}
-                role="option"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSelectSearchResult(result);
-                }}
-              >
-                <div className="result-avatar">
-                  {result.avatar ? (
-                    <img src={result.avatar} alt={result.username} />
-                  ) : (
-                    getAvatarInitials(result.displayName || result.username)
-                  )}
-                </div>
-                <div className="result-info">
-                  <div className="result-name">{result.displayName || result.username}</div>
-                  <div className="result-username">@{result.username}</div>
-                </div>
-              </div>
-            ))}
+        {/* Search Container */}
+        <div className="search-container">
+          <div className={`search-box ${isSearchFocused ? "focused" : ""}`}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10 10L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search chats or @username"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => {
+                setTimeout(() => setIsSearchFocused(false), 200);
+              }}
+              aria-label="Search chats"
+            />
           </div>
-        )}
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="search-results" role="listbox">
+              {searchResults.map((result) => (
+                <div
+                  key={result.id}
+                  className="search-result-item"
+                  onClick={() => handleSelectSearchResult(result)}
+                  role="option"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSelectSearchResult(result);
+                  }}
+                >
+                  <div className="result-avatar">
+                    {result.avatar ? (
+                      <img src={result.avatar} alt={result.username} />
+                    ) : (
+                      getAvatarInitials(result.displayName || result.username)
+                    )}
+                  </div>
+                  <div className="result-info">
+                    <div className="result-name">{result.displayName || result.username}</div>
+                    <div className="result-username">@{result.username}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Chats List */}
         <div className="chats-list" role="list">
@@ -255,15 +257,7 @@ export default function ChatSidebar({
                   {/* Bottom Row: Message Preview + Badge */}
                   <div className="chat-footer">
                     <span className="chat-preview">
-                      {typingUsers.has(chat.id) ? (
-                        <span className="typing-indicator">
-                          <span className="typing-dot" />
-                          <span className="typing-dot" />
-                          <span className="typing-dot" />
-                        </span>
-                      ) : (
-                        truncateMessage(chat.last_message || "No messages yet")
-                      )}
+                      {truncateMessage(chat.last_message || "No messages yet")}
                     </span>
                     {(chat.unread_count || 0) > 0 && (
                       <span className="unread-badge">{chat.unread_count}</span>

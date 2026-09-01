@@ -58,12 +58,21 @@ export default function App() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [sidebarVisible, setSidebarVisible] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
 
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesLoadedRef = useRef<boolean>(false);
+
+  // DETECT MOBILE/DESKTOP ON RESIZE
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // AUTH CHECK
   const checkAuth = useCallback(async () => {
@@ -301,72 +310,116 @@ export default function App() {
 
   return (
     <div className="app">
-      <div className={`app-sidebar ${sidebarVisible ? "visible" : ""}`}>
-        {user && (
-          <ChatSidebar
-            chats={chats}
-            selectedChat={selectedChat}
-            onSelectChat={(chat) => {
-              setSelectedChat(chat);
-              setSidebarVisible(false);
-            }}
-            onCreateChat={handleCreateChat}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            user={user}
-            onLogout={handleLogout}
-            onOpenSettings={() => setShowSettings(true)}
-            onTyping={handleTyping}
-          />
-        )}
-      </div>
-
-      <div className="app-main">
-        {selectedChat && user ? (
-          <>
-            <button
-              className="sidebar-toggle"
-              onClick={() => setSidebarVisible(!sidebarVisible)}
-              title="Back to chats"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M12 16L6 10L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <ChatWindow
-              chat={selectedChat}
-              messages={messages}
-              user={user}
-              onSendMessage={handleSendMessage}
-              onTyping={handleTyping}
-              typingUsers={typingUsers}
-              messagesEndRef={messagesEndRef}
-              isLoadingMessages={loadingMessages}
-            />
-          </>
-        ) : (
-          <div className="empty-chat">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-              <circle
-                cx="32"
-                cy="32"
-                r="30"
-                stroke="currentColor"
-                strokeWidth="2"
-                opacity="0.2"
+      {/* MOBILE: Show either sidebar or chat */}
+      {isMobile ? (
+        <>
+          {!selectedChat ? (
+            /* Mobile: Chat List */
+            <div className="app-mobile-sidebar">
+              {user && (
+                <ChatSidebar
+                  chats={chats}
+                  selectedChat={selectedChat}
+                  onSelectChat={(chat) => {
+                    setSelectedChat(chat);
+                  }}
+                  onCreateChat={handleCreateChat}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  user={user}
+                  onLogout={handleLogout}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onTyping={handleTyping}
+                />
+              )}
+            </div>
+          ) : (
+            /* Mobile: Chat Window */
+            <div className="app-mobile-chat">
+              <button
+                className="mobile-back-btn"
+                onClick={() => {
+                  setSelectedChat(null);
+                  setSearchQuery("");
+                }}
+                title="Back to chats"
+                aria-label="Back to chats"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M12 16L6 10L12 4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              {user && (
+                <ChatWindow
+                  chat={selectedChat}
+                  messages={messages}
+                  user={user}
+                  onSendMessage={handleSendMessage}
+                  onTyping={handleTyping}
+                  typingUsers={typingUsers}
+                  messagesEndRef={messagesEndRef}
+                  isLoadingMessages={loadingMessages}
+                />
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        /* DESKTOP: Show sidebar + chat side by side */
+        <div className="app-desktop-layout">
+          <div className="app-desktop-sidebar">
+            {user && (
+              <ChatSidebar
+                chats={chats}
+                selectedChat={selectedChat}
+                onSelectChat={setSelectedChat}
+                onCreateChat={handleCreateChat}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                user={user}
+                onLogout={handleLogout}
+                onOpenSettings={() => setShowSettings(true)}
+                onTyping={handleTyping}
               />
-              <path
-                d="M32 16C23.2 16 16 23.2 16 32C16 35.3 17 38.4 18.8 41L16 48L23.3 45.2C26.1 47 29.3 48 32 48C40.8 48 48 40.8 48 32C48 23.2 40.8 16 32 16Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                opacity="0.5"
-              />
-            </svg>
-            <p>Select a chat</p>
-            <span>to start messaging</span>
+            )}
           </div>
-        )}
-      </div>
+
+          <div className="app-desktop-main">
+            {selectedChat && user ? (
+              <ChatWindow
+                chat={selectedChat}
+                messages={messages}
+                user={user}
+                onSendMessage={handleSendMessage}
+                onTyping={handleTyping}
+                typingUsers={typingUsers}
+                messagesEndRef={messagesEndRef}
+                isLoadingMessages={loadingMessages}
+              />
+            ) : (
+              <div className="empty-chat">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                  <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" opacity="0.2" />
+                  <path
+                    d="M32 16C23.2 16 16 23.2 16 32C16 35.3 17 38.4 18.8 41L16 48L23.3 45.2C26.1 47 29.3 48 32 48C40.8 48 48 40.8 48 32C48 23.2 40.8 16 32 16Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    opacity="0.5"
+                  />
+                </svg>
+                <h2>Select a chat</h2>
+                <p>to start messaging</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
